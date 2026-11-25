@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}DARI • Revisão de Incoming{% endblock %}
+{% block heading %}<h1>Revisão da migração Incoming</h1><p>Correspondências duvidosas e aliases ainda não homologados. Nenhum registro é apagado ou fundido automaticamente.</p>{% endblock %}
+{% block content %}
+<div class="toolbar"><a class="button" href="/incoming">← Voltar ao Incoming</a></div>
+<div class="incoming-integration-intro"><strong>Fila de conciliação</strong><p>Casos com DRE divergente, identidade possivelmente duplicada ou cadastro incompleto permanecem protegidos. Universidades e países com nomes diferentes são apresentados abaixo para validação humana.</p><p>Estes casos não foram promovidos para novos cadastros oficiais e não alteram os indicadores consolidados.</p></div>
+<section class="card table-widget" data-table-widget>
+<h2>Identidades que exigem conferência ({{ review_rows|length }})</h2>
+<table><thead><tr><th>Estudante</th><th>DRE informado</th><th>Instituição</th><th>Período/aba</th><th>Motivo</th><th>Fonte</th></tr></thead>
+<tbody>{% for r in review_rows %}<tr><td>{{ r.name }}</td><td>{{ r.dre }}</td><td>{{ r.university }}</td><td>{{ r.sheet }}</td><td>{{ r.reason or r.status }}</td><td><a href="/incoming/planilha/linha/{{ r.id }}">Linha {{ r.row }}</a></td></tr>{% endfor %}</tbody></table>
+</section>
+<section class="card table-widget" data-table-widget>
+<h2>Países que exigem decisão ({{ review_countries|length }})</h2>
+<table><thead><tr><th>Grafia original</th><th>Proposta</th><th>Pendência</th></tr></thead>
+<tbody>{% for r in review_countries %}<tr><td>{{ r.source_value }}</td><td>{{ r.proposed_canonical or '-' }}</td><td>{{ r.review_reason }}</td></tr>{% endfor %}</tbody></table>
+</section>
+<section class="card table-widget" data-table-widget>
+<h2>Instituições sem equivalência homologada ({{ review_universities|length }})</h2><p>Contagem desconta as equivalências já confirmadas na v51 e na v52. Casos realmente ambíguos continuam pendentes; nenhum vínculo foi aprovado automaticamente.</p>
+<table><thead><tr><th>Nome original da planilha</th><th>Possível correspondência (não confirmada)</th><th>Motivo</th></tr></thead>
+<tbody>{% for r in review_universities %}<tr><td>{{ r.source_value }}</td><td>{{ r.suggestion or '-' }}</td><td>{{ r.review_reason }}</td></tr>{% endfor %}</tbody></table>
+</section>
+{% endblock %}

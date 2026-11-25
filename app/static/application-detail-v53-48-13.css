@@ -1,0 +1,27 @@
+/* DARI v53.48.13: ficha de candidatura padronizada com as fichas de estudantes. */
+.dari-candidate-summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:16px 0}
+.dari-candidate-summary{min-width:0}
+.dari-candidate-summary h2{margin:0 0 12px}
+.dari-candidate-summary dl{display:grid;grid-template-columns:minmax(110px,.43fr) minmax(0,1fr);margin:0}
+.dari-candidate-summary dt,.dari-candidate-summary dd{margin:0;min-width:0;padding:9px 0;border-bottom:1px solid #edf0f2;overflow-wrap:anywhere}
+.dari-candidate-summary dt{font-size:12px;color:#65778a;font-weight:600}
+.dari-candidate-summary dd{font-size:13px;color:#20354d}
+.dari-candidate-answers-card{margin:16px 0;min-width:0}
+.dari-candidate-card-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.dari-candidate-card-heading h2{margin:0;overflow-wrap:anywhere}
+.dari-candidate-card-heading p{margin:8px 0 0;font-size:12px;color:#65778a;line-height:1.5}
+.dari-candidate-answers-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px;margin:14px 0 0}
+.dari-candidate-answer{padding:10px 0;border-bottom:1px solid #e9edf1;min-width:0;overflow-wrap:anywhere}
+.dari-candidate-answer-wide{grid-column:1/-1}
+.dari-candidate-answer dt{font-size:12px;color:#607389;font-weight:600;margin-bottom:6px}
+.dari-candidate-answer dd{margin:0;font-size:13px;color:#1f334b;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.dari-candidate-actions{margin:18px 0 6px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.dari-candidate-actions-main{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dari-candidate-actions .button{min-height:38px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;text-decoration:none}
+.dari-candidate-delete{margin:0 0 0 auto}
+.dari-candidate-delete-button{background:#fff!important;color:#b4232d!important;border:1px solid #efc9cd!important;border-radius:8px}
+.dari-candidate-delete-button:hover:not(:disabled){background:#fff4f4!important}
+.dari-action-disabled{pointer-events:none;opacity:.48}
+.dari-candidate-empty{font-size:13px;color:#65778a}
+@media(max-width:900px){.dari-candidate-summary-grid{grid-template-columns:1fr}.dari-candidate-answers-grid{grid-template-columns:1fr}.dari-candidate-answer-wide{grid-column:auto}}
+@media(max-width:580px){.dari-candidate-summary dl{grid-template-columns:minmax(0,1fr)}.dari-candidate-summary dt{border:0;padding-bottom:0}.dari-candidate-summary dd{padding-top:4px}.dari-candidate-actions{align-items:stretch;flex-direction:column}.dari-candidate-actions-main{flex-direction:column;align-items:stretch}.dari-candidate-actions-main .button,.dari-candidate-delete,.dari-candidate-delete-button{width:100%}.dari-candidate-delete{margin:0}}

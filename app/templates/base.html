@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}DARI{% endblock %}</title>
+<link rel="stylesheet" href="/static/style.css?v=20261021-v52-5">
+<link rel="stylesheet" href="/static/candidaturas-navigation-v53-48-4.css?v=53.48.4">
+<script defer src="/static/table-columns.js?v=20260929"></script>
+<script defer src="/static/live-search.js?v=20260929-v16-manual"></script>
+<script defer src="/static/floating-horizontal-scroll.js?v=20261006-v28"></script>
+<style id="dari-select-chevron-v52-23">
+/* A mesma seta discreta dos seletores múltiplos, aplicada a seletores nativos
+   de uma opção em todas as telas do sistema. Não altera caixas de múltipla seleção. */
+select:not([multiple]):not([size]), select[size="1"]:not([multiple]) {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23536070' d='M5 6.5h6L8 10z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 10px center !important;
+  background-size: 14px 14px !important;
+  padding-right: 30px !important;
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand"><div class="eyebrow">UFRJ • POLI • DARI</div><div class="brand-title">Gestão Internacional</div></div>
+  <nav aria-label="Navegação principal">
+    {% set path48 = request.url.path %}
+    {% set application_page48 = path48.startswith('/candidaturas/') %}
+    {% if permissions.dashboard.view %}<a class="{{ 'active' if active=='dashboard' else '' }}" href="/">Visão geral</a>{% endif %}
+    {% if permissions.incoming.view %}
+    <details class="sidebar-flow" {% if active in ('incoming', 'incoming_planilha') %}open{% endif %}>
+      <summary class="sidebar-flow-toggle {{ 'current' if active in ('incoming', 'incoming_planilha') else '' }}">
+        <span>Incoming</span><span class="sidebar-flow-chevron" aria-hidden="true"></span>
+      </summary>
+      <div class="sidebar-flow-submenu">
+        <a href="/incoming" class="{{ 'active' if active in ('incoming', 'incoming_planilha') and not application_page48 else '' }}" {% if active in ('incoming', 'incoming_planilha') and not application_page48 %}aria-current="page"{% endif %}>Estudantes</a>
+        <a href="/candidaturas/incoming/pendentes" class="{{ 'active' if active == 'incoming' and application_page48 else '' }}" {% if active == 'incoming' and application_page48 %}aria-current="page"{% endif %}>
+          <span>Candidaturas</span>
+          {% if pending_application_counts.incoming > 0 %}<span class="sidebar-pending-count" aria-label="{{ pending_application_counts.incoming }} candidaturas pendentes">{{ pending_application_counts.incoming }}</span>{% endif %}
+        </a>
+      </div>
+    </details>
+    {% endif %}
+    {% if permissions.outgoing.view %}
+    <details class="sidebar-flow" {% if active == 'outgoing' %}open{% endif %}>
+      <summary class="sidebar-flow-toggle {{ 'current' if active == 'outgoing' else '' }}">
+        <span>Outgoing</span><span class="sidebar-flow-chevron" aria-hidden="true"></span>
+      </summary>
+      <div class="sidebar-flow-submenu">
+        <a href="/outgoing" class="{{ 'active' if active == 'outgoing' and not application_page48 else '' }}" {% if active == 'outgoing' and not application_page48 %}aria-current="page"{% endif %}>Estudantes</a>
+        <a href="/candidaturas/outgoing/pendentes" class="{{ 'active' if active == 'outgoing' and application_page48 else '' }}" {% if active == 'outgoing' and application_page48 %}aria-current="page"{% endif %}>
+          <span>Candidaturas</span>
+          {% if pending_application_counts.outgoing > 0 %}<span class="sidebar-pending-count" aria-label="{{ pending_application_counts.outgoing }} candidaturas pendentes">{{ pending_application_counts.outgoing }}</span>{% endif %}
+        </a>
+      </div>
+    </details>
+    {% endif %}
+    {% if permissions.acordos.view %}<a class="{{ 'active' if active=='acordos' else '' }}" href="/acordos">Acordos</a>{% endif %}
+  </nav>
+  {% if current_user and current_user.is_admin %}<a class="sidebar-settings-link {{ 'active' if active=='configuracoes' else '' }}" href="/configuracoes" aria-label="Configurações" title="Configurações">⚙</a>{% endif %}
+  <div class="side-note"></div>
+</aside>
+<main>
+  <header class="topbar"><div>{% block heading %}{% endblock %}</div><div class="topbar-actions">{% block topbar_extra %}{% endblock %}<a class="logout-link" href="/logout">Sair</a></div></header>
+
+  {% block content %}{% endblock %}
+</main>
+</div>
+</body>
+</html>
+

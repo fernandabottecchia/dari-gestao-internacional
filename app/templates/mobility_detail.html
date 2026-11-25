@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}DARI • {{ m.student.full_name }}{% endblock %}
+{% block heading %}<h1>{{ m.student.full_name }}</h1><p>{{ 'Incoming' if m.direction=='incoming' else 'Outgoing' }} • ficha do processo de mobilidade</p>{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <div class="toolbar-group">
+    <a class="button" href="{% if return_to %}{{ return_to }}{% else %}/{{ m.direction }}{% if workflow_situation == 'completed' %}?processo=concluidos{% endif %}{% endif %}">← Voltar</a>
+  </div>
+  <div class="toolbar-group">
+    {% if permissions[m.direction].edit %}
+      <a class="button primary" href="/mobilidade/{{ m.id }}/editar">Editar processo</a>
+    {% else %}
+      <span class="button primary disabled-control" title="Seu usuário possui acesso somente para visualização nesta área.">Editar processo</span>
+    {% endif %}
+    {% if permissions[m.direction].edit %}
+      {% if workflow_situation != 'completed' %}
+      <form class="toolbar-inline-form" action="/mobilidade/{{ m.id }}/situacao" method="post">
+        <input type="hidden" name="action" value="completed">
+        <button type="submit" class="button secondary" onclick="return confirm('Concluir este processo? Ele será movido para Processos concluídos.')">Marcar processo concluído</button>
+      </form>
+      {% else %}
+      <form class="toolbar-inline-form" action="/mobilidade/{{ m.id }}/situacao" method="post">
+        <input type="hidden" name="action" value="{{ 'unclassify' if incoming_recent_provisional else 'active' }}">
+        <button type="submit" class="button secondary">{{ 'Reabrir processo' if incoming_recent_provisional else 'Reabrir como ativo' }}</button>
+      </form>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+{% if incoming_recent_provisional %}
+<div class="incoming-integration-intro"><strong>Cadastro importado da planilha — homologação pendente</strong>
+<p>Vínculo interno criado para facilitar o acompanhamento. Não comprova chegada, matrícula ou atividade confirmada. O DRE é opcional e pode ser incorporado posteriormente. A edição está disponível; a homologação permanece pendente.</p>
+<p><b>Situação indicada pela fonte:</b> {{ incoming_recent_provisional.normalized_administrative_status }} · <b>Período:</b> {{ incoming_recent_provisional.source_semester }}</p>
+<p>As datas importadas de chegada/conclusão são referências provisórias da planilha e não comprovam a presença do estudante. Quando a DARI configurar o calendário acadêmico, os critérios de atividade serão revistos.</p>
+</div>
+{% endif %}
+<!-- DARI_V53_16_DETAIL -->
+<link rel="stylesheet" href="/static/mobility-workflow-v53-16.css?v=53.16">
+<link rel="stylesheet" href="/static/student-documents-v53-48-9.css?v=53.48.9">
+<div class="detail-grid">
+  <section class="card detail-card"><h2>Estudante</h2>
+    <dl>
+      <dt>Nome</dt><dd>{{ m.student.full_name }}</dd>
+      <dt>E-mail</dt><dd>{{ m.student.email or '-' }}</dd>
+      <dt>DRE</dt><dd>{{ m.student.dre or '-' }}</dd>
+      <dt>Passaporte</dt><dd>{{ m.student.passport or '-' }}</dd>
+    </dl>
+  </section>
+  <section class="card detail-card"><h2>Mobilidade</h2>
+    <dl><dt>Curso</dt><dd>{{ m.course.name if m.course else '-' }}</dd><dt>Programa/Projeto</dt><dd>{{ m.program.name if m.program else '-' }}</dd><dt>Coordenador</dt><dd>{{ m.coordinator.name if m.coordinator else '-' }}</dd>{% if schedule40.mode=='dates' %}<dt>Data de início</dt><dd>{{ schedule40.start_date[8:10] }}/{{ schedule40.start_date[5:7] }}/{{ schedule40.start_date[:4] }}</dd><dt>Data de fim</dt><dd>{{ schedule40.end_date[8:10] }}/{{ schedule40.end_date[5:7] }}/{{ schedule40.end_date[:4] }}</dd>{% endif %}<dt>Semestre de início</dt><dd>{{ m.start_semester.label if m.start_semester else 'Conferir calendário acadêmico' }}</dd><dt>Tipo</dt><dd>{{ m.mobility_type or '-' }}</dd>{% if schedule40.mode!='dates' %}<dt>Duração</dt><dd>{{ (m.duration_semesters|string) + ' sem.' if m.duration_semesters else '-' }}</dd>{% endif %}{% if schedule40.mode=='dates' %}<dt>Retorno previsto</dt><dd>{{ forecast40.expected_label or '-' }}</dd>{% endif %}<dt>Semestre do retorno</dt><dd>{{ forecast40.return_period or ('Conferir calendário acadêmico' if forecast40.expected else '-') }}</dd><dt>Status</dt><dd>{% include '_custom_status_v53_34.html' %}</dd></dl>
+  </section>
+  <section class="card detail-card"><h2>{{ 'Instituição de origem' if m.direction=='incoming' else 'Destino' }}</h2>
+    {% set u = m.home_university if m.direction=='incoming' else m.destination_university %}
+    <dl><dt>Universidade</dt><dd>{{ incoming_approved_university_name or (u.name if u else '-') }}</dd><dt>País</dt><dd>{{ (m._incoming_country33.name if m._incoming_country33 else '-') if incoming_consolidation else ((incoming_recent_provisional or {}).get('canonical_country') or (u.country.name if u and u.country else '-')) }}</dd></dl>
+  </section>
+  {% if m.direction == 'incoming' %}
+  {% set d=m.incoming_detail %}
+  <section class="card detail-card"><h2>Acompanhamento Incoming</h2>
+    <dl><dt>Documento de candidatura</dt><dd>{{ d.candidate_document if d and d.candidate_document else '-' }}</dd><dt>Polimail</dt><dd>{{ d.polimail if d and d.polimail else '-' }}</dd><dt>Acesso intranet</dt><dd>{{ d.intranet_access if d and d.intranet_access else '-' }}</dd><dt>Identificação</dt><dd>{{ d.identification if d and d.identification else '-' }}</dd><dt>Formulário DARI</dt><dd>{{ d.dari_form if d and d.dari_form else '-' }}</dd><dt>Plano de estudos</dt><dd>{{ d.study_plan if d and d.study_plan else '-' }}</dd><dt>Responsável</dt><dd>{{ d.responsible_name if d and d.responsible_name else '-' }}</dd><dt>E-mail responsável</dt><dd>{{ d.responsible_email if d and d.responsible_email else '-' }}</dd><dt>Observações da coordenação</dt><dd class="wrap-value">{{ d.coordination_notes if d and d.coordination_notes else '-' }}</dd></dl>
+  </section>
+  {% if incoming_supplement %}
+  <section class="card detail-card span-detail"><h2>Campos administrativos da planilha Incoming</h2>
+    <dl>
+      <dt>E-mail alternativo</dt><dd>{{ incoming_supplement.alternate_email or '-' }}</dd>
+      <dt>Parecer da coordenação</dt><dd class="wrap-value">{{ incoming_supplement.coordination_opinion or '-' }}</dd>
+      <dt>Carta / documentação</dt><dd>{{ incoming_supplement.letter_status or '-' }}</dd>
+      <dt>Registro / DRE</dt><dd>{{ incoming_supplement.registration_dre_status or '-' }}</dd>
+      <dt>Anotação de processo</dt><dd class="wrap-value">{{ incoming_supplement.internal_process_note or '-' }}</dd>
+      <dt>Previsão de chegada (texto original)</dt><dd>{{ incoming_supplement.expected_arrival_notes or '-' }}</dd>
+      {% if incoming_recent_provisional %}<dt>Chegada na fonte (provisória)</dt><dd>{{ incoming_supplement.expected_arrival or '-' }}</dd><dt>Conclusão na fonte (provisória)</dt><dd>{{ incoming_supplement.expected_departure or '-' }}</dd>{% endif %}
+      <dt>Situação administrativa (texto original)</dt><dd>{{ incoming_supplement.administrative_status or '-' }}</dd>
+      <dt>Observações operacionais</dt><dd class="wrap-value">{{ incoming_supplement.operational_notes or '-' }}</dd>
+    </dl>
+  </section>
+  {% endif %}
+  {# Documentos do estudante Incoming antes da emissao de cartas. #}
+  {% include '_student_documents_v53_48_10.html' %}
+  {% if not incoming_recent_provisional %}
+  <section class="card detail-card span-detail document-issue-card">
+    <div class="section-head">
+      <div>
+        <h2>Emissão de documentos</h2>
+
+      </div>
+
+    </div>
+    <div class="generated-doc-row">
+      <div class="generated-doc-icon">DOC</div>
+      <div class="generated-doc-text">
+        <strong>Cartas de Aceite — Geral e Laboratório</strong>
+        <span>Escolha o modelo oficial da UFRJ, confira os dados e emita uma minuta em DOCX ou PDF para assinatura.</span>
+      </div>
+      <div class="generated-doc-actions">
+        <a class="button primary" href="/mobilidade/{{ m.id }}/documentos/carta-aceite">Preparar carta de aceite</a>
+      </div>
+    </div>
+
+  </section>
+  {% else %}<section class="card detail-card span-detail"><h2>Documentos bloqueados</h2><p>Cadastro ainda não homologado; não é possível emitir Carta de Aceite a partir desta importação.</p></section>{% endif %}
+  {% else %}
+  {% set d=m.outgoing_detail %}
+  <section class="card detail-card"><h2>Acompanhamento Outgoing</h2>
+    <dl><dt>Prorrogação</dt><dd>{{ m.extension or '-' }}</dd><dt>Bolsa</dt><dd>{{ m.scholarship or '-' }}</dd><dt>Observações</dt><dd class="wrap-value">{{ m.notes or '-' }}</dd></dl>
+  </section>
+  {% endif %}
+</div>
+{# A ficha Outgoing exibe documentos ao fim do bloco de informacoes. #}
+{% if m.direction == 'outgoing' %}
+  {% include '_student_documents_v53_48_10.html' %}
+{% endif %}
+
+{% if form_responses48 %}
+{% for entry in form_responses48 %}
+<section class="card" style="margin-top:1rem">
+  <h2>{{ entry.source.name }}</h2>
+  <p style="font-size:13px;color:#687887;margin:8px 0 14px">Resposta do formulário{% if entry.source.stage %} · {{entry.source.stage}}{% endif %}{% if entry.application.submitted_at %} · Recebida em {{entry.application.submitted_at.strftime('%d/%m/%Y')}}{% endif %}</p>
+  <dl style="display:grid;grid-template-columns:minmax(9rem,1fr) minmax(14rem,2fr);gap:.6rem 1rem">
+    {% for label, value in entry.fields %}
+    <dt>{{label}}</dt><dd style="overflow-wrap:anywhere;white-space:pre-wrap">{{value}}</dd>
+    {% endfor %}
+  </dl>
+  {% if entry.files %}
+  <h3 style="margin-top:16px">Arquivos enviados</h3>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+    {% for f in entry.files %}{% if f.sha256 %}<a class="button secondary" href="/candidaturas/respostas/{{entry.response.id}}/anexos/{{f.id}}">{{f.name}}</a>{% else %}<span>{{f.name}} (pendente de autorizacao Google)</span>{% endif %}{% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endfor %}
+{% endif %}
+{% endblock %}

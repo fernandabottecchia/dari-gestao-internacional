@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}DARI • {{ university.name }}{% endblock %}
+{% block heading %}<h1>{{ university.name }}</h1><p>Processos e datas registrados para esta universidade.</p>{% endblock %}
+{% block content %}
+{% set retorno = request.query_params.get('retorno', '') %}
+{% set destino_voltar = retorno if retorno == '/acordos/analise' or retorno.startswith('/acordos/analise?') else '/acordos/analise' %}
+<div class="toolbar"><a href="{{ destino_voltar }}" class="button secondary">← Voltar</a></div>
+<section class="card" style="padding:20px;margin-top:14px">
+  <h2>Histórico de acordos da universidade</h2>
+  <div style="overflow:auto"><table style="width:100%;border-collapse:collapse;text-align:left"><thead><tr><th>Processo</th><th>Tipo de acordo</th><th>Assinatura</th><th>Fim informado</th><th>Status de vigência</th></tr></thead><tbody>
+    {% for r in history %}<tr><td>{{ r.process }}</td><td>{{ r.type }}</td><td>{{ r.begin }}</td><td>{{ r.end }}</td><td>{{ r.status }}</td></tr>{% else %}<tr><td colspan="5">Nenhum registro anterior localizado.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

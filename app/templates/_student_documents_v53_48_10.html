@@ -1,0 +1,56 @@
+{# DARI v53.48.10. Leitura na ficha, edicao apenas na rota /editar. #}
+<section class="card dari-student-doc-card span-detail" id="documentos-estudante">
+  <div class="dari-student-doc-head">
+    <h2>Documentos do estudante</h2>
+    <span class="dari-student-doc-count">{{ student_documents|length }} {{ 'documento' if student_documents|length == 1 else 'documentos' }}</span>
+  </div>
+  {% if student_documents %}
+    <div class="dari-student-doc-items">
+    {% for doc in student_documents %}
+      {% set doc_filename = doc.path.rsplit('/', 1)[-1] %}
+      <div class="dari-student-doc-item">
+        <div class="dari-student-doc-description">
+          <span class="dari-student-doc-file-icon" aria-hidden="true">▤</span>
+          <div class="dari-student-doc-text">
+            <a class="dari-student-doc-name" href="/mobilidade/{{ m.id }}/documentos-estudante/{{ doc.id }}">{{ doc_filename.rsplit('.', 1)[0] if '.' in doc_filename else doc_filename }}</a>
+            <small>{{ doc_filename }} · {{ '%.1f'|format(doc.size_bytes / 1024.0) }} KB</small>
+          </div>
+        </div>
+        <div class="dari-student-doc-buttons">
+          <a class="button secondary" href="/mobilidade/{{ m.id }}/documentos-estudante/{{ doc.id }}">Baixar</a>
+          {% if student_documents_edit|default(false) %}
+          <form method="post" data-dari-doc-form="delete" class="dari-student-doc-delete-form"
+                action="/mobilidade/{{ m.id }}/documentos-estudante/{{ doc.id }}/excluir"
+                onsubmit="return confirm('Excluir este documento do processo?')">
+            <input type="hidden" name="csrf" value="{{ student_doc_delete_csrf }}">
+            <button type="submit" class="button secondary dari-student-doc-delete">Excluir</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+    </div>
+  {% else %}
+    <p class="dari-student-doc-empty">Nenhum documento adicionado a este processo.</p>
+  {% endif %}
+  {% if student_documents_edit|default(false) %}
+    <form class="dari-student-doc-form" data-dari-doc-form="upload"
+          action="/mobilidade/{{ m.id }}/documentos-estudante/adicionar"
+          method="post" enctype="multipart/form-data">
+      <input type="hidden" name="csrf" value="{{ student_doc_upload_csrf }}">
+      <div class="dari-student-doc-field">
+        <label for="student-doc-title-{{ m.id }}">Título do documento</label>
+        <input id="student-doc-title-{{ m.id }}" type="text" name="titulo" maxlength="130"
+               placeholder="Ex.: Comprovante de matrícula" required>
+      </div>
+      <div class="dari-student-doc-field">
+        <label for="student-doc-upload-{{ m.id }}">Arquivo do computador</label>
+        <input id="student-doc-upload-{{ m.id }}" type="file" name="arquivo" required>
+      </div>
+      <div class="dari-student-doc-submit">
+        <button class="button primary" type="submit">Adicionar documento</button>
+      </div>
+    </form>
+    <p class="dari-doc-feedback" role="status" aria-live="polite" hidden></p>
+  {% endif %}
+</section>

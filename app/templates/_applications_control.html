@@ -1,0 +1,18 @@
+<section class="card application-control" id="candidaturas">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px;border:0;padding:22px 24px">
+    <h2 style="margin:0;flex:1 1 220px">Controle de Candidaturas</h2>
+    <nav class="application-tabs" aria-label="Consultar candidaturas" style="display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:0">
+      <a class="application-tab pending" href="/candidaturas/{{ active }}/pendentes" style="text-decoration:none">
+        <span class="application-tab-title">Candidaturas pendentes</span>
+        <span class="application-tab-count">{{ application_pending|length }}</span>
+      </a>
+      <a class="application-tab rejected" href="/candidaturas/{{ active }}/rejeitadas" style="text-decoration:none">
+        <span class="application-tab-title">Candidaturas rejeitadas</span>
+        <span class="application-tab-count">{{ application_rejected|length }}</span>
+      </a>
+      {% if current_user and current_user.is_admin %}
+      <a class="button secondary" href="/candidaturas/fontes?direcao={{ active }}" title="Configurar formulários" aria-label="Configurar formulários e planilhas" style="padding:8px 12px;border-radius:10px;line-height:1;font-size:19px">⚙</a>
+      {% endif %}
+    </nav>
+  </div>
+</section>

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}DARI • Incoming {{ row.sheet_name }} #{{ row.source_row }}{% endblock %}
+{% block heading %}<h1>Incoming</h1><p>Detalhes do registro importado • visualização somente leitura</p>{% endblock %}
+{% block content %}
+<div class="incoming-src-wrap">{% if permissions.incoming.edit %}<a class="button primary" href="/incoming/planilha/linha/{{ row.id }}/editar">Editar registro</a>{% endif %}
+  <div class="incoming-src-title"><div><div class="incoming-src-label">ORIGEM RASTREÁVEL • LINHA ORIGINAL</div>
+  <h2>{{ row.sheet_name }} — linha {{ row.source_row }}</h2><p>{{ batch.original_filename }} • Tipo: {{ row.row_kind }} • Conciliação: {{ row.review_status }}</p></div>
+  <a class="incoming-src-link" href="/incoming/planilha?sheet={{ row.sheet_name | urlencode }}">← Voltar para {{ row.sheet_name }}</a>
+  </div>
+  <div class="incoming-src-banner">Todas as colunas são apresentadas <strong>exatamente como armazenadas na cópia da planilha</strong>, incluindo valores vazios. Normalizações são propostas separadas, não sobrescrevem dados. Correções locais ficam nos campos interpretados abaixo, preservando a cópia original.</div>
+  {% if row.mobility_id %}<div class="incoming-src-panel"><div class="incoming-src-section"><strong>Correspondência histórica segura:</strong> <a class="incoming-src-link" href="/mobilidade/{{ row.mobility_id }}">Abrir mobilidade #{{ row.mobility_id }}</a></div></div>{% endif %}
+  <div class="incoming-src-panel">
+    <div class="incoming-src-section"><h3>Colunas originais da planilha</h3><p>Valores preservados por coluna e posição. Celular com campo «Senha» foi ocultado pela política de segurança quando presente.</p>
+    <dl class="incoming-src-detail-grid">
+    {% for col in original_columns %}<div class="incoming-src-detail-field {{ 'empty' if col.value == '—' else '' }}"><dt>{{ col.name }} <span class="incoming-src-meta">({{ col.col }})</span></dt><dd>{{ col.value }}</dd></div>{% endfor %}
+    </dl></div>
+    <div class="incoming-src-section"><h3>Campos interpretados para conciliação</h3><p>Mapeamentos auxiliares usados pelo processo de revisão; não são edições do cadastro operacional.</p>
+    <dl class="incoming-src-detail-grid">
+      {% for k,v in fields.items() %}<div class="incoming-src-detail-field"><dt>{{ k }}</dt><dd>{{ display(v) }}</dd></div>{% endfor %}
+    </dl></div>
+    {% if normalized %}<div class="incoming-src-section"><h3>Propostas de normalização</h3><p>Avaliações para padronização futura de países, sem alteração do texto original.</p><dl class="incoming-src-detail-grid">
+    {% for k,v in normalized.items() %}<div class="incoming-src-detail-field"><dt>{{ k }}</dt><dd>{{ display(v) }}</dd></div>{% endfor %}
+    </dl></div>{% endif %}
+    {% if hyperlinks %}<div class="incoming-src-section"><h3>Links armazenados da fonte</h3><dl class="incoming-src-detail-grid">
+      {% for k,v in hyperlinks.items() %}
+      <div class="incoming-src-detail-field"><dt>{{ k }}</dt><dd>
+        {% if v is mapping and v.get('url') and (v['url'].startswith('https://') or v['url'].startswith('http://') or v['url'].startswith('mailto:')) %}
+        <a class="incoming-src-link" href="{{ v['url'] }}" target="_blank" rel="noopener noreferrer">Abrir link externo</a>
+        {% else %}{{ display(v) }}{% endif %}
+      </dd></div>
+      {% endfor %}
+    </dl></div>{% endif %}
+    {% if formulas %}<div class="incoming-src-section"><h3>Fórmulas originais registradas</h3><dl class="incoming-src-detail-grid">
+      {% for k,v in formulas.items() %}<div class="incoming-src-detail-field"><dt>{{ k }}</dt><dd>{{ display(v) }}</dd></div>{% endfor %}
+    </dl></div>{% endif %}
+    {% if annotations %}<div class="incoming-src-section"><h3>Anotações e comentários da linha</h3><dl class="incoming-src-detail-grid">
+      {% for a in annotations %}<div class="incoming-src-detail-field"><dt>{{ a.cell }} • {{ a.author or 'Sem autor' }}</dt><dd>{{ a.content or '—' }}</dd></div>{% endfor %}
+    </dl></div>{% endif %}
+    <div class="incoming-src-section"><h3>Rastreabilidade</h3><p class="incoming-src-meta">Snapshot SHA-256: {{ batch.source_sha256 }}<br>Hash da linha: {{ row.row_sha256 }}<br>Lote interno: {{ batch.id }} • ID da linha no staging: {{ row.id }} • Credenciais omitidas: {{ row.redacted_credentials }}</p></div>
+  </div>
+</div>
+{% endblock %}

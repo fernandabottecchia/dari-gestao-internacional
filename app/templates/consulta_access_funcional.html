@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}DARI — {{ meta.title }}{% endblock %}
+
+{% block heading %}
+<h1>{{ meta.title }}</h1>
+<p>{{ meta.description }}</p>
+{% endblock %}
+
+{% block content %}
+<style>
+.qcard{padding:1.2rem 1.4rem;margin-bottom:1rem}
+.qform{display:flex;flex-wrap:wrap;gap:.75rem;align-items:end}
+.qfield{display:flex;flex-direction:column;gap:.25rem}
+.qfield input,.qfield select{
+  min-width:150px;
+  padding:.55rem .65rem;
+}
+.qtable{overflow:auto;padding:1rem}
+.qtable table{width:100%;min-width:1050px;font-size:.82rem}
+.qnote{
+  padding:.7rem .9rem;
+  background:#f7f8f9;
+  border-radius:8px;
+  margin-top:.8rem;
+}
+.qnav{
+  display:flex;
+  gap:.6rem;
+  justify-content:center;
+  align-items:center;
+  margin:1rem 0;
+}
+.qtop-actions{
+  display:flex;
+  align-items:center;
+  margin-bottom:1rem;
+}
+.qexport-actions{
+  display:flex;
+  align-items:center;
+  margin-top:1rem;
+}
+.qnav .button{
+  min-width:92px;
+  text-align:center;
+}
+</style>
+
+<section class="card qcard">
+<div class="qtop-actions">
+<a class="button secondary" href="/">← Voltar</a>
+</div>
+
+<form class="qform" method="get">
+
+{% if "ano" in meta.params %}
+<div class="qfield">
+<label>Ano</label>
+<input name="ano" value="{{ values.ano }}" placeholder="Ex.: 2018">
+</div>
+{% endif %}
+
+{% if "semestre" in meta.params %}
+<div class="qfield">
+<label>Semestre</label>
+<select name="semestre">
+<option value="">Selecione</option>
+<option value="1" {% if values.semestre == "1" %}selected{% endif %}>1</option>
+<option value="2" {% if values.semestre == "2" %}selected{% endif %}>2</option>
+</select>
+</div>
+{% endif %}
+
+{% if "texto" in meta.params %}
+<div class="qfield">
+<label>Parâmetro da consulta</label>
+<input
+ name="texto"
+ value="{{ values.texto }}"
+ placeholder="Digite universidade, país ou projeto">
+</div>
+{% endif %}
+
+{% if "candidaturas" in meta.params %}
+<div class="qfield">
+<label>Somente universidades de candidaturas?</label>
+<select name="candidaturas">
+<option value="nao" {% if values.candidaturas != "sim" %}selected{% endif %}>Não</option>
+<option value="sim" {% if values.candidaturas == "sim" %}selected{% endif %}>Sim</option>
+</select>
+</div>
+{% endif %}
+
+<div class="qfield" style="flex:1">
+<label>Pesquisar dentro do resultado</label>
+<input
+ name="busca"
+ value="{{ values.busca }}"
+ placeholder="Nome, DRE, universidade, país...">
+</div>
+
+<button type="submit">Executar consulta</button>
+</form>
+
+<p style="margin-top:1rem">
+<strong>{{ total }} registro(s)</strong> no resultado.
+</p>
+
+{% if note %}
+<div class="qnote">{{ note }}</div>
+{% endif %}
+
+<div class="qexport-actions">
+<a class="button primary" href="/consultas-historicas/exportar/{{ slug }}.csv{% if export_query %}?{{ export_query }}{% endif %}">
+Exportar resultado completo em CSV
+</a>
+</div>
+</section>
+
+<section class="card qtable">
+<table>
+<thead>
+<tr>
+{% for key,label in columns %}
+<th>{{ label }}</th>
+{% endfor %}
+</tr>
+</thead>
+<tbody>
+{% for row in rows %}
+<tr>
+{% for key,label in columns %}
+<td>
+{% set value = row.get(key) %}
+{{ value if value not in (none, "") else "?" }}
+</td>
+{% endfor %}
+</tr>
+{% else %}
+<tr>
+<td colspan="{{ columns|length }}">
+Nenhum registro para os parâmetros informados.
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</section>
+
+{% if paginas > 1 %}
+<nav class="qnav">
+{% if pagina > 1 %}
+<a class="button secondary" href="?pagina={{ pagina - 1 }}{% if export_query %}&{{ export_query }}{% endif %}">
+← Anterior
+</a>
+{% endif %}
+
+<span>Página {{ pagina }} de {{ paginas }}</span>
+
+{% if pagina < paginas %}
+<a class="button secondary" href="?pagina={{ pagina + 1 }}{% if export_query %}&{{ export_query }}{% endif %}">
+Próxima →
+</a>
+{% endif %}
+</nav>
+{% endif %}
+
+{% endblock %}
+

@@ -1,0 +1,55 @@
+<style>
+.access-section{
+  padding:1.3rem 1.5rem;
+  margin-bottom:1rem;
+}
+.access-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(285px,1fr));
+  gap:.75rem;
+  margin-top:1rem;
+}
+.access-item{
+  display:flex;
+  flex-direction:column;
+  gap:.35rem;
+  padding:1rem;
+  border:1px solid #dce3e6;
+  border-radius:11px;
+  background:#fff;
+}
+.access-item a{
+  font-weight:700;
+  text-decoration:none;
+  color:var(--text);
+}
+.access-item a:hover{
+  color:var(--accent);
+  text-decoration:underline;
+}
+.access-item small{
+  color:#5c6b73;
+  line-height:1.4;
+}
+.access-section h2,
+.access-item strong{
+  color:var(--text);
+}
+details{margin-top:.7rem}
+</style>
+
+<section class="card access-section" id="consultas-administrativas">
+<h2>Consultas administrativas</h2>
+<div class="access-grid">
+<div class="access-item"><a href="/consultas-administrativas/previsao-retorno-estudantes">Previsão Retorno Estudantes</a><small>Retornos previstos cadastrados, por fluxo e período.</small></div>
+<div class="access-item"><a href="/consultas-administrativas/inicio-intercambio">Início do intercâmbio</a><small>Período de início dos estudantes, por fluxo.</small></div>
+<div class="access-item"><a href="/consultas-administrativas/alunos-ativos">Alunos ativos</a><small>Incoming e Outgoing em intercâmbio na data atual.</small></div>
+<div class="access-item"><a href="/consultas-administrativas/projetos">Projetos</a><small>Projetos e programas cadastrados no sistema.</small></div>
+<div class="access-item"><a href="/consultas-administrativas/lista-emails-universidades">Lista E-mails Universidades</a><small>Contatos e e-mails cadastrados das universidades.</small></div>
+<div class="access-item"><a href="/consultas-administrativas/universidades">Universidades</a><small>Cadastro de instituições, siglas e contatos.</small></div>
+<div class="access-item"><a href="/consultas-administrativas/deadline-parceiras">Deadline parceiras</a><small>Prazos, contatos e links úteis das parceiras.</small></div>
+<div class="access-item"><a href="/consultas-administrativas/laboratorios">Laboratórios</a><small>Cadastro, atividades, equipes e contatos dos laboratórios da Escola Politécnica.</small></div>
+<div class="access-item"><a href="/consultas-administrativas/professores">Professores</a><small>Cadastro de professores e contatos.</small></div>
+<div class="access-item"><a href="/consultas-administrativas/cursos">Cursos</a><small>Cursos e números de cadastro.</small></div>
+<div class="access-item"><a href="/consultas-administrativas/coordenadores-cursos">Coordenadores de cursos</a><small>Coordenação e contatos por curso.</small></div>
+</div></section>

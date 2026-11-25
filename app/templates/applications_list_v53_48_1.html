@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}DARI • Candidaturas {{ 'Incoming' if direction48 == 'incoming' else 'Outgoing' }}{% endblock %}
+{% block heading %}<h1>Candidaturas</h1><p>{{ 'Incoming' if direction48 == 'incoming' else 'Outgoing' }}</p>{% endblock %}
+{% block topbar_extra %}
+  {% if current_user and current_user.is_admin %}
+    <a class="dari-candidaturas-settings" href="/candidaturas/fontes?direcao={{ direction48 }}" title="Configurar formulários" aria-label="Configurar formulários e planilhas">⚙</a>
+  {% endif %}
+{% endblock %}
+{% block content %}
+<nav class="dari-candidaturas-tabs" aria-label="Situação das candidaturas">
+  <a href="/candidaturas/{{ direction48 }}/pendentes" class="{{ 'active' if state48 == 'pending' else '' }}" {% if state48 == 'pending' %}aria-current="page"{% endif %}>Pendentes</a>
+  <a href="/candidaturas/{{ direction48 }}/rejeitadas" class="{{ 'active' if state48 == 'rejected' else '' }}" {% if state48 == 'rejected' %}aria-current="page"{% endif %}>Rejeitadas</a>
+</nav>
+{% if groups48 %}
+  {% for group in groups48 %}
+  <section class="card table-widget" data-table-widget style="margin-bottom:16px">
+    {% set table_id = 'candidaturas-' ~ direction48 ~ '-' ~ state48 ~ '-' ~ group.source_id %}
+    {% set table_label = group.name %}
+    {% set xlsx_url = '/candidaturas/' ~ direction48 ~ '/' ~ ('pendentes' if state48=='pending' else 'rejeitadas') ~ '/visao.xlsx?source_id=' ~ group.source_id %}
+    {% include '_table_controls.html' %}
+    <table data-column-table="{{ table_id }}">
+      <thead><tr><th>Nome</th><th>Status</th><th>DRE</th><th>Passaporte</th><th>E-mail</th><th>{{ 'Instituição de origem' if direction48=='incoming' else 'Universidade de destino' }}</th><th>Curso</th><th>Semestre</th><th>Tipo de candidatura</th><th>Recebida em</th><th data-fixed-column="true">Ações</th></tr></thead>
+      <tbody>
+      {% for item in group['items'] %}{% set a=item.record %}
+      <tr>
+        <td>{{ a.full_name or ((a.first_name or '') ~ ' ' ~ (a.surnames or ''))|trim or '-' }}</td>
+        <td><span class="mobility29-badge {{ 'pending' if state48 == 'pending' else 'cancelled' }}">{{ 'Pendente' if state48=='pending' else 'Rejeitada' }}</span></td>
+        <td>{{a.dre or '-'}}</td><td>{{a.passport or '-'}}</td><td>{{a.email or '-'}}</td>
+        <td>{{a.institution_name or '-'}}</td><td>{{a.course_name or '-'}}</td><td>{{a.academic_semester or '-'}}</td>
+        <td>{{a.application_type or '-'}}</td>
+        <td>{{a.submitted_at.strftime('%d/%m/%Y %H:%M') if a.submitted_at else '-'}}</td>
+        <td class="row-actions" data-fixed-column="true"><a href="/candidaturas/ficha/{{a.id}}">Abrir</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+  </section>
+  {% endfor %}
+{% else %}
+<section class="card"><p style="margin:0">Nenhuma candidatura {{ 'pendente' if state48 == 'pending' else 'rejeitada' }}.</p></section>
+{% endif %}
+{% endblock %}

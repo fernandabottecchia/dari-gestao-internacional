@@ -1,0 +1,28 @@
+[Unit]
+Description=DARI - Gestao Internacional
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=dari
+Group=dari
+WorkingDirectory=/opt/dari/current
+EnvironmentFile=/etc/dari/dari.env
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=MPLBACKEND=Agg
+Environment=MPLCONFIGDIR=/tmp/dari-matplotlib
+Environment=DARI_BIND_HOST=127.0.0.1
+Environment=TZ=America/Sao_Paulo
+ExecStart=/opt/dari/venv/bin/python -m tools.serve
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+# Somente se necessário para atualização de token OAuth:
+# ReadWritePaths=/etc/dari/google
+
+[Install]
+WantedBy=multi-user.target

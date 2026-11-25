@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+{% block title %}DARI • Consultas do Access{% endblock %}
+
+{% block heading %}
+<h1>Consultas do banco antigo</h1>
+<p>Funcionalidades recuperadas do sistema Access da DARI.</p>
+{% endblock %}
+
+{% block content %}
+<style>
+.access-intro,.access-section{
+  padding:1.3rem 1.5rem;
+  margin-bottom:1rem;
+}
+.access-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(285px,1fr));
+  gap:.75rem;
+  margin-top:1rem;
+}
+.access-item{
+  display:flex;
+  flex-direction:column;
+  gap:.35rem;
+  padding:1rem;
+  border:1px solid #dce3e6;
+  border-radius:11px;
+  background:#fff;
+}
+.access-item a{
+  font-weight:700;
+  text-decoration:none;
+}
+.access-item small{
+  color:#5c6b73;
+  line-height:1.4;
+}
+.access-status{
+  display:inline-block;
+  width:max-content;
+  font-size:.72rem;
+  border:1px solid #b9d3c4;
+  border-radius:999px;
+  padding:.15rem .48rem;
+  color:#315d40;
+}
+.access-pending{
+  border-color:#e0d3b8;
+  color:#7a5b1e;
+}
+details{margin-top:.7rem}
+</style>
+
+<section class="card access-intro">
+  <h2>Reconstrução funcional do Access</h2>
+  <p>
+    Esta página reorganiza as funções do banco antigo conforme a tela
+    utilizada pela DARI: relatórios, consultas operacionais,
+    estatísticas e emissão de documentos.
+  </p>
+  <p>
+    As consultas marcadas como <strong>funcionais</strong> executam
+    somente leitura sobre os registros históricos importados.
+    A rotina antiga <code>Acrescimo BD OUTGOING</code> continua
+    desativada porque era uma consulta de inserção.
+  </p>
+</section>
+
+<section class="card access-section">
+<h2>Relatórios</h2>
+<div class="access-grid">
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/alunos-em-intercambio">
+Alunos em Intercâmbio</a>
+<small>Situação histórica e regra de contabilização do Access.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/mobilidade-ano-semestre">
+Alunos Mobilidade Ano/Semestre</a>
+<small>Filtra pelo ano e semestre informados.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/previsao-retorno-brasileiros">
+Previsão Retorno Brasileiros</a>
+<small>Reproduz a fórmula histórica de duração.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/previsao-retorno-estrangeiros">
+Previsão Retorno Estrangeiros</a>
+<small>Reproduz a fórmula histórica de duração.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/mobilidade-por-universidade">
+Mobilidade por Universidade</a>
+<small>Pesquisa instituição de origem ou intercâmbio.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/alunos-por-projeto">
+Alunos por Projeto</a>
+<small>Pesquisa projeto pelo nome/número histórico.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/lista-emails-universidades">
+Lista E-mails Universidades</a>
+<small>Reconstruída a partir do e-mail do coordenador estrangeiro.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/mobilidade-por-pais">
+Mobilidade por País</a>
+<small>Preserva inclusive a assimetria de filtro encontrada na SQL antiga.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/duplo-diploma-ano">
+Alunos Duplo Diploma por Ano</a>
+<small>Preserva a regra antiga de duração maior que dois semestres.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/brasileiros-duplo-diploma-ano">
+Brasileiros Alunos Duplo Diploma por Ano</a>
+<small>Versão restrita aos estudantes brasileiros.</small>
+</div>
+
+</div>
+</section>
+
+<section class="card access-section">
+<h2>Consultas operacionais</h2>
+<div class="access-grid">
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/alunos-em-intercambio">
+Alunos em Intercâmbio</a>
+<small>Mesma fonte histórica do relatório correspondente.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/situacao-pendente">
+Alunos com Situação Pendente</a>
+<small>Usa a flag antiga <code>aluno_pendente</code>.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/alunos-em-aberto">
+Alunos em Aberto</a>
+<small>Lista registros com <code>aluno_contabilizar = Não</code>.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/alunos-irregulares">
+Alunos Irregulares</a>
+<small>Reproduz a regra de retorno, situação, contabilização e pendência.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/universidades">
+Universidades</a>
+<small>Consulta o cadastro histórico detalhado de instituições.</small>
+</div>
+
+</div>
+</section>
+
+<section class="card access-section">
+<h2>Estatísticas</h2>
+<div class="access-grid">
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/outgoing-pais">
+Outgoing por País</a>
+<small>Brasileiros agrupados por país de destino.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/outgoing-ano">
+Outgoing por Ano</a>
+<small>Brasileiros agrupados por ano de início.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/incoming-pais">
+Incoming por País</a>
+<small>Estrangeiros agrupados por país de origem.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/incoming-ano">
+Incoming por Ano</a>
+<small>Estrangeiros agrupados por ano de início.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/mobilidade-curso">
+Mobilidade por Curso e Ano</a>
+<small>Contagem por curso e nacionalidade.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/dispensas">
+Dados de Dispensas</a>
+<small>Fonte dos antigos indicadores de dispensas e disciplinas concedidas.</small>
+</div>
+
+</div>
+</section>
+
+<section class="card access-section">
+<h2>Emissão de documentos</h2>
+<div class="access-grid">
+
+<div class="access-item">
+<span class="access-status">Consulta funcional</span>
+<a href="/consultas-historicas/consulta/carta-aceite-brafitec">
+Cartas de Aceite BRAFITEC</a>
+<small>
+A seleção histórica está reconstruída.
+A geração individual de Carta de Aceite já existe na ficha de Incoming.
+</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Consulta funcional</span>
+<a href="/consultas-historicas/consulta/carta-aceite-geral">
+Cartas de Aceite GERAL</a>
+<small>
+A seleção histórica está reconstruída.
+A geração individual de Carta de Aceite já existe na ficha de Incoming.
+</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Dados funcionais</span>
+<a href="/consultas-historicas/consulta/declaracao-matricula">
+Declaração de Matrícula Ativa</a>
+<small>
+Os dados da antiga mala direta estáo disponíveis.
+O documento final será ligado depois da definição das colunas atuais.
+</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Dados funcionais</span>
+<a href="/consultas-historicas/consulta/declaracao-matricula-endereco">
+Declaração c/ Passaporte e Endereço</a>
+<small>
+Consulta de dados reconstruída; modelo final permanece separado por enquanto.
+</small>
+</div>
+
+<div class="access-item">
+<span class="access-status access-pending">Modelo recuperado</span>
+<span><strong>Folha de Informação</strong></span>
+<small>
+O Word e os campos históricos foram recuperados.
+Vamos ligar a geração depois de fechar os campos definitivos do sistema.
+</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/outgoing-pais">
+Outgoing por País (Tab.)</a>
+<small>Resultado tabular exportável em CSV.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/incoming-pais">
+Incoming por País (Tab.)</a>
+<small>Resultado tabular exportável em CSV.</small>
+</div>
+
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/mobilidade-curso">
+Mobilidade por Curso e Ano (Tab.)</a>
+<small>Resultado tabular exportável em CSV.</small>
+</div>
+
+</div>
+</section>
+
+<section class="card access-section">
+<h2>Auditoria e legado</h2>
+
+<div class="access-grid">
+<div class="access-item">
+<span class="access-status">Funcional</span>
+<a href="/consultas-historicas/consulta/00-consultas-diversas">
+00-CONSULTAS DIVERSAS</a>
+<small>
+Reprodução dos 16 campos e dos INNER JOINs da consulta principal.
+</small>
+</div>
+
+<div class="access-item">
+<span class="access-status access-pending">Desativada</span>
+<span><strong>Acrescimo BD OUTGOING</strong></span>
+<small>
+Era uma consulta APPEND/INSERT. Foi preservada apenas como referência
+e nunca será executada sobre os arquivos originais.
+</small>
+</div>
+</div>
+
+<details>
+<summary>Mostrar nomes técnicos e consultas encontradas apenas em versões antigas</summary>
+<p>
+/Curso • /País • Alunos Ativos POLI Centrale • Alunos da Centrale ?
+Alunos das Centrales • Alunos/Universidade ?
+Alunos_outgoing_em_um_periodo_por_curso_e_univ • Consulta1 ?
+Consulta_projeto_aluno • Cst Frm Buscar Aluno • Duplo Diploma ?
+EM CONSTRUÇÃO - IRREGULARES • Incoming/Curso • Mobilidade por País ?
+Reuniao Brafitec • Reuniao Brafitec incoming • Reuniao CSF ?
+Reunião Universidade • Rodrigo Vital • Universidades Rede Magalhães ?
+reuniao-universidade • tprojetos_Tabela de referência cruzada.
+</p>
+<p>
+Esses itens permanecem no inventário técnico. Eles não são exibidos
+como funções principais até que se comprove que acrescentam algo que
+não foi substituído pelas consultas da versão principal.
+</p>
+</details>
+
+</section>
+{% endblock %}

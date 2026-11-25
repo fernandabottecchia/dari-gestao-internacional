@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}DARI • {{ chart_title }}{% endblock %}
+{% block heading %}<h1>{{ chart_title }}</h1><p>Consulte acordos institucionais por situação, instituição e período.</p>{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="/static/dari-single-select-v53-9.css?v=53.9">
+<script defer src="/static/dari-single-select-v53-9.js?v=53.9"></script>
+<style>
+.ag54{display:grid;gap:18px}.ag54 .card{padding:18px 20px}.ag54-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.ag54-links{display:flex;gap:8px;flex-wrap:wrap}.ag54-fields{display:grid;grid-template-columns:repeat(3,minmax(170px,1fr));gap:14px;margin:15px 0}.ag54-field{display:block;min-width:0}.ag54-field>label{display:block;font-size:12px;font-weight:600;margin-bottom:6px;color:#475569}.ag54-input,.ag54-select,.ag54-trigger{display:block;width:100%;height:40px;box-sizing:border-box;border:1px solid #dbe3ea;border-radius:8px;background:#fff;color:#172333;font:600 13px inherit;padding:8px 11px}.ag54-trigger{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;text-align:left;font-size:13px;font-weight:600}.ag54-trigger::after{content:'▾';font-size:12px;color:#64748b}.ag54-multi{position:relative;min-width:0}.ag54-dropdown{display:none;position:absolute;left:0;right:0;top:calc(100% + 5px);z-index:35;border:1px solid #dbe3ea;border-radius:9px;max-height:235px;overflow-y:auto;overflow-x:hidden;background:#fff;box-shadow:0 12px 30px rgba(17,24,39,.15);padding:5px}.ag54-multi.open .ag54-dropdown{display:block}.ag54-choice{display:flex;align-items:center;gap:9px;font-size:12px;line-height:1.35;font-weight:400;padding:7px 9px;cursor:pointer;border-radius:5px;white-space:normal;overflow-wrap:anywhere}.ag54-choice:hover{background:#f1f5f9}.ag54-choice input{flex:0 0 16px;width:16px;height:16px;margin:0;accent-color:#36747a}.ag54-apply{grid-column:1/-1;display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%}.ag54-quick{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}.ag54-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.ag54-kpi{padding:15px 18px;border:1px solid #dde6ed;border-radius:12px}.ag54-kpi span{color:#64748b;display:block;font-size:12px;margin-bottom:6px}.ag54-kpi strong{font-size:25px}.ag54-chart{height:320px}.ag54-tablebox{overflow:auto;max-width:100%}.ag54-table{border-collapse:collapse;width:100%;min-width:1150px;table-layout:fixed;font-size:12px}.ag54-table th{text-align:left;overflow-wrap:anywhere;text-transform:uppercase;background:#f6f8fa;color:#45576d;font-size:11px;padding:12px;white-space:nowrap}.ag54-table td{padding:10px 12px;border-bottom:1px solid #e4ebf1;white-space:normal;overflow-wrap:anywhere;word-break:normal;vertical-align:top}.ag54-table td a{color:inherit}.ag54-table.ag54-summary{min-width:100%;table-layout:auto}.ag54-table .ag54-opening{white-space:nowrap}.ag54-muted{font-size:12px;color:#667788}.ag54-table .ag54-opening .row-actions a{color:var(--accent);font-size:12px;font-weight:600;text-decoration:none}.ag54-table .ag54-opening .row-actions a:hover{text-decoration:underline}.ag54-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}@media(max-width:850px){.ag54-fields{grid-template-columns:repeat(2,minmax(160px,1fr))}}@media(max-width:550px){.ag54-fields{grid-template-columns:1fr}.ag54-kpis{grid-template-columns:1fr}}
+
+/* v53.48.8.1 — Rolagem horizontal exclusivamente no recorte de acordos. */
+.ag54{grid-template-columns:minmax(0,1fr);min-width:0;max-width:100%}
+.ag54 > .card{min-width:0;max-width:100%}
+.ag54-records{min-width:0;max-width:100%;width:100%}
+.ag54-records .table-scroll{display:block;width:100%;max-width:100%;min-width:0;overflow-x:auto;overflow-y:auto;scrollbar-gutter:stable;overscroll-behavior-x:contain}
+.ag54-records .ag54-table{table-layout:auto;width:max-content;min-width:100%;max-width:none;border-collapse:separate;border-spacing:0}
+.ag54-records .ag54-table th,.ag54-records .ag54-table td{white-space:nowrap;overflow-wrap:normal;word-break:normal}
+.ag54-records .ag54-table th:nth-child(1),.ag54-records .ag54-table td:nth-child(1){min-width:310px;max-width:360px;white-space:normal;overflow-wrap:anywhere;word-break:normal}
+.ag54-records .ag54-table th:nth-child(2),.ag54-records .ag54-table td:nth-child(2){min-width:145px}
+.ag54-records .ag54-table th:nth-child(3),.ag54-records .ag54-table td:nth-child(3){min-width:185px}
+.ag54-records .ag54-table th:nth-child(4),.ag54-records .ag54-table td:nth-child(4){min-width:120px}
+.ag54-records .ag54-table th:nth-child(5),.ag54-records .ag54-table td:nth-child(5){min-width:155px}
+.ag54-records .ag54-table th:nth-child(6),.ag54-records .ag54-table td:nth-child(6){min-width:235px;max-width:300px;white-space:normal;overflow-wrap:anywhere;word-break:normal}
+.ag54-records .ag54-table th:nth-child(7),.ag54-records .ag54-table td:nth-child(7){min-width:145px}
+.ag54-records .ag54-table th:nth-child(8),.ag54-records .ag54-table td:nth-child(8){min-width:110px}
+.ag54-records .ag54-table th:nth-child(9),.ag54-records .ag54-table td:nth-child(9){min-width:130px}
+.ag54-records .ag54-table th:nth-child(10),.ag54-records .ag54-table td:nth-child(10){min-width:88px}
+.ag54-records .ag54-table .is-column-hidden{display:none!important}
+</style>
+<div class="ag54">
+  <div class="ag54-links">
+    <a class="button secondary" href="{{ '/acordos' if request.query_params.get('origem') == 'acordos' else '/' }}">← {{ 'Voltar a Acordos' if request.query_params.get('origem') == 'acordos' else 'Voltar ao painel' }}</a>
+    <a class="button" href="/acordos/analise/pdf{% if request.url.query %}?{{ request.url.query }}{% endif %}">Baixar PDF</a>
+    <a class="button" href="/acordos/analise/xlsx{% if request.url.query %}?{{ request.url.query }}{% endif %}">Baixar Excel</a>
+  </div>
+  <section class="card">
+    <div class="ag54-heading"><h2>Filtros de acordos</h2><a class="button secondary" href="/acordos/analise">Limpar filtros</a></div>
+    <form class="ag54-fields" method="get" action="/acordos/analise" id="ag54-form">
+      {% set sets = [('a_type','Tipo de acordo',options.types,'Todos'),('a_status','Status de vigência',options.status,'Todos')] %}
+      {% for key,title,entries,alltext in sets %}
+      <div class="ag54-field"><label>{{ title }}</label>
+        <div class="ag54-multi" data-field="{{ key }}" data-label="{{ alltext }}">
+          <input type="hidden" name="{{ key }}" value="{{ filters[key] }}">
+          <button type="button" class="ag54-trigger" aria-expanded="false">{{ alltext }}</button>
+          <div class="ag54-dropdown">
+            <label class="ag54-choice"><input type="checkbox" data-all> {{ alltext }}</label>
+            {% for v in entries %}<label class="ag54-choice"><input type="checkbox" data-item value="{{ v }}" data-title="{{ v }}" {% if v in filters[key].split(',') %}checked{% endif %}> {{ v }}</label>{% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      {% set lists = [('a_university','Universidade',options.universities,'Todas'),('a_country','País',options.countries,'Todos')] %}
+      {% for key,title,entries,alltext in lists %}
+      <div class="ag54-field"><label>{{ title }}</label>
+        <div class="ag54-multi" data-field="{{ key }}" data-label="{{ alltext }}">
+          <input type="hidden" name="{{ key }}" value="{{ filters[key] }}">
+          <button type="button" class="ag54-trigger" aria-expanded="false">{{ alltext }}</button>
+          <div class="ag54-dropdown">
+            <label class="ag54-choice"><input type="checkbox" data-all> {{ alltext }}</label>
+            {% for v in entries %}<label class="ag54-choice"><input type="checkbox" data-item value="{{ v.id }}" data-title="{{ v.name }}" {% if v.id|string in filters[key].split(',') %}checked{% endif %}> {{ v.name }}</label>{% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      <div class="ag54-field"><label for="ag54-year">Ano de referência</label><input class="ag54-input" name="a_year" id="ag54-year" type="number" min="1900" max="2100" placeholder="Ex.: 2016" value="{{ filters.a_year }}"></div>
+      <div class="ag54-field"><label for="ag54-mode">Critério temporal</label><select class="ag54-select dari-single-native" id="ag54-mode" name="date_mode"><option value="vigencia" {% if filters.date_mode=='vigencia' %}selected{% endif %}>Vigência</option><option value="assinatura" {% if filters.date_mode=='assinatura' %}selected{% endif %}>Assinatura</option></select></div>
+      <div class="ag54-apply"><button class="button primary" type="submit">Aplicar filtros</button><div class="ag54-quick"><a class="button {{ 'primary' if filters.a_in_progress else 'secondary' }}" href="/acordos/analise?a_in_progress=1&amp;a_year=&amp;date_mode=vigencia">Acordos em andamento</a><a class="button {{ 'primary' if filters.a_expiring_180 else 'secondary' }}" href="/acordos/analise?a_expiring_180=1&amp;a_year=&amp;date_mode=vigencia">Vencimentos Próximos (180 dias)</a></div></div>
+    </form>
+  </section>
+  {% if not show_chart %}<p class="ag54-muted">Acordos com validade entre {{ expiry_start.strftime('%d/%m/%Y') }} e {{ expiry_end.strftime('%d/%m/%Y') }}, inclusive. Ordenados pelo vencimento mais próximo.</p>{% endif %}
+  {% if show_chart %}<section class="card"><h2>{{ chart_title }}</h2>
+    {% if chart.labels %}<div class="ag54-chart" style="height:{{ [320, chart.labels|length * 36 + 75]|max }}px"><canvas id="ag54-chart"></canvas></div>{% else %}<p class="ag54-muted">Nenhum acordo encontrado para este recorte.</p>{% endif %}
+  </section>
+  <section class="card table-widget" data-table-widget>
+    {% set table_id = 'ag54-summary-v53-48-8' %}
+    {% set table_label = 'Dados do relatório' %}
+    {% set xlsx_url = '/acordos/analise/resumo.xlsx' ~ ('?' ~ request.url.query if request.url.query else '') %}
+    {% include '_table_controls.html' %}
+    <table class="ag54-table ag54-summary" data-column-table="{{ table_id }}"><thead><tr><th>{{ grouping }}</th><th>Acordos</th></tr></thead><tbody>
+      {% for name,quantity in summary %}<tr><td>{{ name }}</td><td>{{ quantity }}</td></tr>{% else %}<tr><td colspan="2">Nenhum resultado.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+  {% endif %}
+  <section class="card table-widget ag54-records" data-table-widget>
+    {% set table_id = 'ag54-records-v53-48-8' %}
+    {% set table_label = 'Acordos que vencem nos próximos 180 dias' if filters.a_expiring_180 else 'Acordos do recorte' %}
+    {% set xlsx_url = '/acordos/analise/recorte.xlsx' ~ ('?' ~ request.url.query if request.url.query else '') %}
+    {% include '_table_controls.html' %}
+    <table class="ag54-table" data-column-table="{{ table_id }}"><thead><tr><th>Universidade</th><th>País</th><th>Tipo</th><th>SIG+</th><th>SEI</th><th>Andamento</th><th>Status</th><th>Assinatura</th><th>Fim / validade</th><th data-fixed-column="true">Ações</th></tr></thead><tbody>
+      {% for a in agreements %}<tr><td>{{ a.university }}</td><td>{{ a.country }}</td><td>{{ a.type }}</td><td>{{ a.sig }}</td><td>{{ a.sei }}</td><td>{{ a.progress }}</td><td>{{ a.status }}</td><td>{{ a.signed.strftime('%d/%m/%Y') if a.signed else '—' }}</td><td>{{ a.expiry.strftime('%d/%m/%Y') if a.expiry else '—' }}</td><td class="ag54-opening" data-fixed-column="true"><span class="row-actions"><a href="{{ a.detail_url.split('#', 1)[0] }}{{ '&' if '?' in a.detail_url.split('#', 1)[0] else '?' }}retorno={{ ('/acordos/analise' ~ ('?' ~ request.url.query if request.url.query else ''))|urlencode }}{% if '#' in a.detail_url %}#{{ a.detail_url.split('#', 1)[1] }}{% endif %}">Abrir</a></span></td></tr>
+      {% else %}<tr><td colspan="10">Nenhum registro corresponde aos filtros.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<script>
+(() => {
+  document.querySelectorAll('.ag54-multi').forEach((root) => {
+    const hidden=root.querySelector('input[type=hidden]');
+    const button=root.querySelector('button.ag54-trigger');
+    const checkAll=root.querySelector('input[data-all]');
+    const items=Array.from(root.querySelectorAll('input[data-item]'));
+    function update() {
+      const selected=items.filter(x=>x.checked);
+      const everybody=selected.length===items.length;
+      checkAll.checked=everybody;
+      hidden.value=everybody?'':selected.length===0?'__none__':selected.map(x=>x.value).join(',');
+      button.firstChild.textContent=everybody?root.dataset.label:selected.length===0?'Nenhum':selected.length===1?(selected[0].dataset.title||selected[0].value):selected.length+' selecionados';
+    }
+    button.addEventListener('click',e=>{
+      e.preventDefault();const wasOpen=root.classList.contains('open');
+      document.querySelectorAll('.ag54-multi.open').forEach(x=>{x.classList.remove('open');x.querySelector('button').setAttribute('aria-expanded','false')});
+      if(!wasOpen){root.classList.add('open');button.setAttribute('aria-expanded','true')}
+    });
+    checkAll.addEventListener('change',()=>{items.forEach(x=>x.checked=checkAll.checked);update()});
+    items.forEach(x=>x.addEventListener('change',update));
+    if(!hidden.value)items.forEach(x=>x.checked=true);
+    update();
+  });
+  document.addEventListener('click',e=>{if(!e.target.closest('.ag54-multi'))document.querySelectorAll('.ag54-multi.open').forEach(x=>{x.classList.remove('open');x.querySelector('button').setAttribute('aria-expanded','false')})});
+  const spec={{ chart|tojson }},node=document.getElementById('ag54-chart');
+  if(node&&window.Chart)new Chart(node,{type:'bar',data:{labels:spec.labels,datasets:spec.datasets.map(x=>({...x,backgroundColor:'rgba(71,125,130,.82)',borderRadius:4}))},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}},y:{ticks:{autoSkip:false}}}}});
+})();
+</script>
+{% endblock %}

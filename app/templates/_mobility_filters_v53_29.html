@@ -1,0 +1,19 @@
+<style>
+.mobility32-toolbar{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin:20px 0}.mobility30-filters{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin:0;flex:1}.mobility30-filters .mobility32-search{width:360px;max-width:100%}.mobility32-search input{width:100%;box-sizing:border-box}.mobility32-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-left:auto}.mobility32-actions .button{white-space:nowrap}@media(max-width:700px){.mobility30-filters{flex-basis:100%}.mobility30-filters .mobility32-search{width:100%}.mobility32-actions{width:100%;justify-content:flex-end}}.mobility30-filters label{display:grid;gap:5px;font-size:13px}.mobility30-filters select{min-width:180px}.mobility29-badge{display:inline-block;border-radius:16px;padding:4px 9px;margin:2px;font-size:12px;font-weight:600;white-space:nowrap}.mobility29-badge.active{color:#11633d;background:#e3f4e9}.mobility29-badge.period{color:#174ea0;background:#e7efff}.mobility29-badge.completed{color:#6b328e;background:#f2e9fa}.mobility29-neutral{font-size:12px;color:#536171}
+</style>
+<link rel="stylesheet" href="/static/mobility-workflow-v53-16.css?v=53.30">
+
+<div class="mobility32-toolbar">
+<form action="/{{ area29 }}" method="get" class="mobility30-filters">
+{% if processo == 'concluidos' %}<input type="hidden" name="processo" value="concluidos">{% endif %}
+<label class="mobility32-search">Pesquisar<input name="q" value="{{ q }}" placeholder="Buscar em qualquer coluna..."></label>
+<label>Semestres<select name="periodo"><option value="todos" {{ 'selected' if periodo=='todos' else '' }}>Todos os semestres</option><option value="nao_informado" {{ 'selected' if periodo=='nao_informado' else '' }}>Semestre não informado</option>{% if selected_periods|length>1 %}<option value="{{ periodo }}" selected>{{ selected_periods|sort|join(', ') }}</option>{% endif %}{% for s in semesters_incoming %}<option value="{{ s }}" {{ 'selected' if s==periodo else '' }}>{{ s }}</option>{% endfor %}</select></label>
+<button type="submit">Buscar</button>
+</form>
+
+<div class="mobility32-actions">
+<a class="button" href="/{{ area29 }}/documentos">Documentos</a>
+{% if processo == 'concluidos' %}<a class="button" href="/{{ area29 }}?q={{ q|urlencode }}&amp;periodo={{ periodo|urlencode }}">Voltar para {{ area29|title }}</a>{% else %}<a class="button" href="/{{ area29 }}?processo=concluidos&amp;q={{ q|urlencode }}&amp;periodo={{ periodo|urlencode }}">Processos concluídos</a>{% endif %}
+{% if permissions[area29].edit %}<a class="button primary" href="/novo/{{ area29 }}">Novo {{ area29 }}</a>{% else %}<span class="button primary disabled-control" title="Seu usuário possui acesso somente para visualização.">Novo {{ area29 }}</span>{% endif %}
+</div>
+</div>

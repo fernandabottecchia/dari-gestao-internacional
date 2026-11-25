@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}DARI • Incoming{% endblock %}
+{% block heading %}<h1>{% if processo == 'concluidos' %}Processos concluídos{% else %}Incoming{% endif %}</h1><p>Mobilidade de estudantes estrangeiros para a UFRJ.</p>{% endblock %}
+{% block content %}
+<!-- DARI_V53_16_TABS -->
+<link rel="stylesheet" href="/static/mobility-workflow-v53-16.css?v=53.16">
+{% set area29 = 'incoming' %}
+{% include '_mobility_filters_v53_29.html' %}
+
+
+<section class="card table-widget" data-table-widget>
+{% set table_id = "incoming" %}
+{% set table_label = "Estudantes Incoming" %}
+{% set xlsx_url = '/tabelas/incoming/visao.xlsx?q=' ~ (q|urlencode) ~ '&periodo=' ~ (periodo|urlencode) ~ '&processo=' ~ processo ~ '&situacao=' ~ situacao %}
+{# DARI_V53_16_XLSX #}
+{% include "_table_controls.html" %}
+<table data-column-table="incoming-v53-48-8">
+<thead><tr>
+<th>Nome</th><th>Status</th><th>DRE</th><th>Passaporte</th><th>E-mail</th><th>Instituição de origem</th><th>País de origem</th><th>Curso</th><th>Projeto</th><th>Coordenador</th><th>Semestre</th><th>Duração</th><th>Mobilidade</th><th>Polimail</th><th>Responsável</th><th>E-mail do responsável</th><th>Documento candidatura</th><th>Acesso Intranet</th><th>Form. DARI</th><th>Plano de estudos</th><th>Observações / Coordenação</th><th data-fixed-column="true">Ações</th>
+</tr></thead><tbody>
+{% for r in source_records %}<tr class="incoming-integration-pending">
+<td>{{ r.name }}</td><td><span class="mobility29-neutral">{{ r.status }}</span></td><td>{{ r.dre }}</td><td>{{ r.passport }}</td><td>{{ r.email }}</td>
+<td>{{ r.institution }}</td><td>{{ r.country }}</td><td>{{ r.course }}</td><td>{{ r.program }}</td><td>{{ r.coordinator }}</td>
+<td>{{ r.semester }}</td><td>{{ r.duration }}</td><td>{{ r.mobility_type }}</td>
+<td>{{ r.polimail }}</td><td>{{ r.responsible_name }}</td><td>{{ r.responsible_email }}</td>
+<td>{{ r.candidate_document }}</td><td>{{ r.intranet_access }}</td><td>{{ r.dari_form }}</td><td>{{ r.study_plan }}</td><td>{{ r.notes }}</td>
+
+<td class="row-actions" data-fixed-column="true"><a href="/incoming/planilha/linha/{{ r.id }}">Abrir</a></td>
+</tr>{% endfor %}
+{% for m in rows %}{% set d = m.incoming_detail %}<tr>
+<td>{{ m.student.full_name }}</td><td>{% for cls,label in status_labels.get(m.id,[]) %}<span class="mobility29-badge {{ cls }}">{{ label }}</span>{% endfor %}{% if m._status_palette34 or not status_labels.get(m.id) %}{% include '_custom_status_v53_34.html' %}{% endif %}</td><td>{{ m.student.dre or '-' }}</td><td>{{ m.student.passport or '-' }}</td><td>{{ m.student.email or '-' }}</td>
+<td>{{ approved_university_labels.get(m.id) or (m.home_university.name if m.home_university else '-') }}</td><td>{{ m._incoming_country33.name if m._incoming_country33 else '-' }}</td>
+<td>{{ (m.course.name if m.course else (recent_provisional.get(m.id) or {}).get('source_course')) or '-' }}</td><td>{{ (recent_provisional.get(m.id) or {}).get('source_program') or (m.program.name if m.program else '-') }}</td><td>{{ (recent_provisional.get(m.id) or {}).get('source_coordinator') or (m.coordinator.name if m.coordinator else '-') }}</td>
+<td>{{ period_labels.get(m.id) or '-' }}</td><td>{{ m.duration_semesters if m.duration_semesters is not none else '-' }}</td><td>{{ m.mobility_type or '-' }}</td>
+<td>{{ d.polimail if d and d.polimail else '-' }}</td><td>{{ d.responsible_name if d and d.responsible_name else '-' }}</td><td>{{ d.responsible_email if d and d.responsible_email else '-' }}</td>
+<td>{{ d.candidate_document if d and d.candidate_document else '-' }}</td><td>{{ d.intranet_access if d and d.intranet_access else '-' }}</td><td>{{ d.dari_form if d and d.dari_form else '-' }}</td><td>{{ d.study_plan if d and d.study_plan else '-' }}</td><td>{{ d.coordination_notes if d and d.coordination_notes else (m.notes or '-') }}</td>
+<td class="row-actions" data-fixed-column="true"><a href="/mobilidade/{{ m.id }}">Abrir</a></td></tr>{% endfor %}
+
+</tbody></table></div></section>
+{% endblock %}

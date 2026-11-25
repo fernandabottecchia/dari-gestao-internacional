@@ -1,0 +1,9 @@
+<section class="card wide"><h2>Contatos</h2>
+<div id="contact-pairs44">
+{% for contact in contact_pairs44 %}<div class="contact-row44">
+<label>E-mail<input type="email" name="contact_email44_{{ loop.index0 }}" value="{{ contact.email }}"></label>
+<label>Nome da pessoa (opcional)<input name="contact_name44_{{ loop.index0 }}" value="{{ contact.name }}"></label>
+<input type="hidden" name="contact_delete44_{{ loop.index0 }}" value="0"><button type="button" class="button secondary remove-contact44">Excluir e-mail</button></div>{% endfor %}
+<div class="contact-row44"><label>Novo e-mail<input type="email" name="contact_email44_{{ contact_pairs44|length }}"></label><label>Nome da pessoa (opcional)<input name="contact_name44_{{ contact_pairs44|length }}"></label><input type="hidden" name="contact_delete44_{{ contact_pairs44|length }}" value="0"><button type="button" class="button secondary remove-contact44">Excluir e-mail</button></div>
+</div><input type="hidden" name="contact_count44" id="contact-count44" value="{{ contact_pairs44|length + 1 }}"><button type="button" class="button secondary" id="add-contact44">Adicionar outro e-mail</button>
+</section>

@@ -1,0 +1,10 @@
+.dari-response-editor-card{margin-top:16px;min-width:0;grid-column:1/-1}
+.dari-response-editor-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dari-response-editor-head h2{margin:0;overflow-wrap:anywhere}
+.dari-response-pending{padding:5px 9px;border-radius:99px;font-size:12px;border:1px solid #d6e4df;background:#f1f8f5;color:#2d706b;white-space:nowrap}
+.dari-response-origin{color:#607487;font-size:12px;margin:8px 0 16px}
+.dari-response-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+.dari-response-field{min-width:0;display:flex;flex-direction:column;gap:6px;font-weight:500;font-size:13px;overflow-wrap:anywhere}
+.dari-response-field textarea{min-height:64px;width:100%;resize:vertical;box-sizing:border-box;font:inherit;font-weight:400;line-height:1.45;border:1px solid #d9e2ec;border-radius:8px;padding:10px 12px;background:#fff;color:#1a2d44}
+.dari-response-field textarea:focus{outline:2px solid #99c6c4;outline-offset:1px}
+@media(max-width:760px){.dari-response-fields{grid-template-columns:1fr}.dari-response-editor-card{padding:14px}}

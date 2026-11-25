@@ -1,0 +1,26 @@
+/* DARI v53.16 - acompanhamento de processos; nao altera os demais filtros */
+.workflow-tabs{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0 18px}
+.workflow-tabs a{display:inline-flex;align-items:center;padding:9px 14px;border:1px solid #d5dfe5;border-radius:9px;text-decoration:none;background:white;color:#28445c;font-weight:600}
+.workflow-tabs a.active{background:#286c78;color:white;border-color:#286c78}
+.workflow-label{display:inline-block;margin-left:6px;padding:3px 9px;font-size:12px;border-radius:12px;background:#f0f3f6;color:#526270;white-space:nowrap}
+.workflow-label.active{background:#e4f3ee;color:#186951}.workflow-label.completed{background:#e6edf7;color:#335b89}
+.workflow-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0 16px}
+.workflow-controls form{display:inline-block;margin:0}.workflow-controls button{cursor:pointer}
+.workflow-filter-switch{display:flex;align-items:center;justify-content:center;gap:8px;min-height:38px;border:1px solid #ccd9e1;border-radius:8px;background:white;color:#173c4c;padding:8px 13px;cursor:pointer;font-weight:600}
+.workflow-filter-switch[aria-pressed="true"]{background:#286c78;color:white;border-color:#286c78}
+.workflow-details{padding:14px 18px}.workflow-details strong{margin-right:6px}
+
+/* DARI_V53_17_UI_PROCESSOS */
+.workflow-simple-filter{display:flex;flex-direction:column;gap:8px;min-width:0}
+.workflow-simple-check{display:inline-flex;align-items:center;gap:8px;font-weight:600;color:#173c4c;cursor:pointer}
+.workflow-simple-check input{width:16px;height:16px;margin:0;accent-color:var(--accent);flex:none}
+.workflow-inline-form{margin-top:12px}
+.toolbar-group{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.toolbar-inline-form{display:inline-flex;margin:0}
+.workflow-simple-check input[disabled]{cursor:not-allowed;opacity:.7}
+
+/* DARI_V53_18_FICHA_ALUNO_CONCLUSAO */
+.detail-card .workflow-check-form{margin:0;display:inline-flex;align-items:center}
+.detail-card .workflow-row-check{display:inline-flex;align-items:center;justify-content:flex-start;vertical-align:middle;cursor:pointer;min-height:16px}
+.detail-card .workflow-row-check input{width:16px;height:16px;max-width:16px;margin:0;padding:0;accent-color:var(--accent);cursor:pointer}
+.detail-card .workflow-row-check input:disabled{cursor:default}

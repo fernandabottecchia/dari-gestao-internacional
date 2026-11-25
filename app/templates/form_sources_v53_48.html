@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% block title %}DARI • Configurar formulários {{ 'Incoming' if direction48 == 'incoming' else 'Outgoing' }}{% endblock %}
+{% block heading %}<h1>Configurar formulários</h1><p>{{ 'Incoming' if direction48 == 'incoming' else 'Outgoing' }}</p>{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="/static/form-sources-layout-v53-48-6.css?v=53.48.6">
+
+<div class="dari-fsrc-page" data-dari-form-sources>
+  <div class="dari-fsrc-toolbar">
+    <a class="button secondary" href="/candidaturas/{{ direction48 }}/pendentes">← Voltar às candidaturas</a>
+    <button type="button" class="button primary dari-fsrc-new-toggle" data-fsrc-toggle="dari-fsrc-new" aria-controls="dari-fsrc-new" aria-expanded="false">Nova planilha</button>
+  </div>
+
+  <section class="card dari-fsrc-new-panel" id="dari-fsrc-new" hidden aria-label="Cadastrar nova planilha">
+    <div class="dari-fsrc-section-heading"><h2>Nova planilha</h2></div>
+    <form method="post" action="/candidaturas/fontes" class="dari-fsrc-form">
+      <input type="hidden" name="direction" value="{{ direction48 }}">
+      <input type="hidden" name="processing_mode" value="{{ 'review' if direction48 == 'outgoing' else 'new' }}">
+      <div class="dari-fsrc-fields">
+        <label class="dari-fsrc-wide">Título do formulário
+          <input name="name" maxlength="200" required placeholder="Nome exibido na lista de candidaturas">
+        </label>
+        <label class="dari-fsrc-wide">Link da planilha de respostas
+          <input type="url" name="url" required placeholder="https://docs.google.com/spreadsheets/d/.../edit">
+        </label>
+        <label>Nome da aba (opcional)
+          <input name="sheet_title" maxlength="200" placeholder="Respostas ao formulário 1">
+        </label>
+        <label>Etapa (opcional)
+          <input name="stage" maxlength="160" value="{{ 'Cadastro inicial' if direction48 == 'incoming' else '' }}" placeholder="Ex.: Registro de saída">
+        </label>
+      </div>
+      <details class="dari-fsrc-advanced">
+        <summary>Opções avançadas</summary>
+        <div class="dari-fsrc-advanced-body">
+          <label>Linha do cabeçalho
+            <input type="number" name="header_row" min="1" max="20" value="1" required>
+          </label>
+        </div>
+      </details>
+      <div class="dari-fsrc-footer">
+        <div class="dari-fsrc-actions">
+          <button class="button primary" type="submit">Conectar planilha</button>
+          <button class="button secondary" type="button" data-fsrc-cancel="dari-fsrc-new">Cancelar</button>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  {% if sources48 %}
+    <div class="dari-fsrc-list" aria-label="Planilhas cadastradas">
+      {% for s in sources48 %}
+      <section class="card dari-fsrc-card" aria-labelledby="dari-fsrc-title-{{ s.id }}">
+        <div class="dari-fsrc-card-heading">
+          <div class="dari-fsrc-card-title-group">
+            <h2 id="dari-fsrc-title-{{ s.id }}">{{ s.name }}</h2>
+            <span class="dari-fsrc-status {{ 'dari-fsrc-status-active' if s.active else 'dari-fsrc-status-paused' }}">{{ 'Leitura ativa' if s.active else 'Leitura pausada' }}</span>
+          </div>
+          <button type="button" class="button secondary dari-fsrc-edit-toggle" data-fsrc-toggle="dari-fsrc-editor-{{s.id}}" aria-controls="dari-fsrc-editor-{{s.id}}" aria-expanded="false">Editar</button>
+        </div>
+        <div class="dari-fsrc-meta">Última consulta: {{ last_checked_brt48.get(s.id, 'Aguardando primeira leitura') }}{% if s.last_new_count %} · {{s.last_new_count}} nova(s) na última leitura{% endif %}</div>
+        {% if s.multi_tab_2026 %}<p class="dari-fsrc-meta" style="margin-top:4px">Abas de 2026 em diante e respostas enviadas desde 2026. Novas abas são identificadas quando o acesso autenticado do Google está disponível.</p>{% endif %}
+
+        {% if s.schema_warning %}
+        <div class="dari-fsrc-notice" role="status">
+          <div class="dari-fsrc-notice-line"><span class="dari-fsrc-alert-dot" aria-hidden="true"></span><strong>Conferir perguntas alteradas</strong></div>
+          <p>{{ s.schema_warning }}</p>
+        </div>
+        {% endif %}
+        {% if s.last_error %}
+        <div class="dari-fsrc-notice" role="status">
+          <div class="dari-fsrc-notice-line"><span class="dari-fsrc-alert-dot" aria-hidden="true"></span><strong>Sem acesso à planilha</strong></div>
+          <p>Não foi possível acessar esta planilha. Verifique o link e as permissões de leitura.</p>
+          <details class="dari-fsrc-tech-details">
+            <summary>Detalhes técnicos</summary>
+            <pre>{{ s.last_error }}</pre>
+          </details>
+        </div>
+        {% endif %}
+
+        <div class="dari-fsrc-editor" id="dari-fsrc-editor-{{s.id}}" hidden>
+          <form method="post" id="dari-fsrc-edit-form-{{s.id}}" action="/candidaturas/fontes/{{s.id}}/editar" class="dari-fsrc-form">
+            <input type="hidden" name="processing_mode" value="{{ 'review' if direction48 == 'outgoing' else 'new' }}">
+            <div class="dari-fsrc-fields">
+              <label class="dari-fsrc-wide">Título do formulário
+                <input name="name" value="{{s.name}}" maxlength="200" required>
+              </label>
+              <label class="dari-fsrc-wide">Link da planilha de respostas
+                <input name="url" type="url" required value="https://docs.google.com/spreadsheets/d/{{s.spreadsheet_id}}/edit{% if s.sheet_gid %}#gid={{s.sheet_gid}}{% endif %}">
+              </label>
+              <label>Nome da aba (opcional)
+                <input name="sheet_title" value="{{s.sheet_title or ''}}" maxlength="200">
+              </label>
+              <label>Etapa (opcional)
+                <input name="stage" value="{{s.stage or ''}}" maxlength="160">
+              </label>
+            </div>
+            <details class="dari-fsrc-advanced">
+              <summary>Opções avançadas</summary>
+              <div class="dari-fsrc-advanced-body">
+                <label>Linha do cabeçalho
+                  <input type="number" name="header_row" min="1" max="20" value="{{s.header_row or 1}}" required>
+                </label>
+              </div>
+            </details>
+          </form>
+          <form id="dari-fsrc-toggle-form-{{s.id}}" method="post" action="/candidaturas/fontes/{{s.id}}/alternar"></form>
+          <form id="dari-fsrc-archive-form-{{s.id}}" method="post" action="/candidaturas/fontes/{{s.id}}/excluir" data-fsrc-archive="{{s.name}}"></form>
+          <div class="dari-fsrc-footer">
+            <div class="dari-fsrc-actions">
+              <button form="dari-fsrc-edit-form-{{s.id}}" type="submit" class="button primary">Salvar alterações</button>
+              <button type="button" class="button secondary" data-fsrc-cancel="dari-fsrc-editor-{{s.id}}">Cancelar</button>
+              <button form="dari-fsrc-archive-form-{{s.id}}" type="submit" class="button secondary dari-fsrc-delete" aria-label="Excluir formulário {{s.name}}">Excluir formulário</button>
+            </div>
+            <div class="dari-fsrc-actions dari-fsrc-footer-right">
+              <a class="button secondary" href="https://docs.google.com/spreadsheets/d/{{s.spreadsheet_id}}/edit{% if s.sheet_gid %}#gid={{s.sheet_gid}}{% endif %}" target="_blank" rel="noopener noreferrer">Abrir planilha</a>
+              <button form="dari-fsrc-toggle-form-{{s.id}}" type="submit" class="button secondary">{{ 'Pausar leitura' if s.active else 'Retomar leitura' }}</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      {% endfor %}
+    </div>
+  {% else %}
+    <section class="card dari-fsrc-empty"><p>Nenhuma planilha cadastrada neste fluxo.</p></section>
+  {% endif %}
+
+  {% if direction48 == 'outgoing' and outgoing_waiting48 %}
+    <div class="dari-fsrc-section-heading dari-fsrc-waiting-title"><h2>Formulários Outgoing aguardando link</h2></div>
+    <div class="dari-fsrc-list" aria-label="Formulários Outgoing aguardando link">
+      {% for title in outgoing_waiting48 %}
+      {% set waiting_id = 'dari-fsrc-waiting-' ~ loop.index %}
+      <section class="card dari-fsrc-card">
+        <div class="dari-fsrc-card-heading">
+          <div class="dari-fsrc-card-title-group">
+            <h2>{{ title }}</h2><span class="dari-fsrc-status dari-fsrc-status-paused">Aguardando planilha</span>
+          </div>
+          <button type="button" class="button secondary" data-fsrc-toggle="{{waiting_id}}" aria-expanded="false" aria-controls="{{waiting_id}}">Configurar</button>
+        </div>
+        <div class="dari-fsrc-editor" id="{{waiting_id}}" hidden>
+          <form method="post" action="/candidaturas/fontes" class="dari-fsrc-form">
+            <input type="hidden" name="direction" value="outgoing">
+            <input type="hidden" name="processing_mode" value="review">
+            <div class="dari-fsrc-fields">
+              <label class="dari-fsrc-wide">Título do formulário
+                <input name="name" maxlength="200" value="{{ title }}" required>
+              </label>
+              <label class="dari-fsrc-wide">Link da planilha de respostas
+                <input type="url" name="url" required placeholder="https://docs.google.com/spreadsheets/d/.../edit">
+              </label>
+              <label>Nome da aba (opcional)
+                <input name="sheet_title" maxlength="200" placeholder="Respostas ao formulário 1">
+              </label>
+              <label>Etapa (opcional)
+                <input name="stage" maxlength="160" value="{{ title }}">
+              </label>
+            </div>
+            <details class="dari-fsrc-advanced">
+              <summary>Opções avançadas</summary>
+              <div class="dari-fsrc-advanced-body">
+                <label>Linha do cabeçalho
+                  <input type="number" name="header_row" min="1" max="20" value="1" required>
+                </label>
+              </div>
+            </details>
+            <div class="dari-fsrc-footer">
+              <div class="dari-fsrc-actions">
+                <button type="submit" class="button primary">Conectar planilha</button>
+                <button type="button" class="button secondary" data-fsrc-cancel="{{waiting_id}}">Cancelar</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+<script defer src="/static/form-sources-layout-v53-48-6.js?v=53.48.7.1"></script>
+{% endblock %}

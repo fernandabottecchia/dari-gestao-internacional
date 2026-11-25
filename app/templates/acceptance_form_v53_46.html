@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}DARI • Carta de Aceite — Incoming{% endblock %}
+{% block heading %}<h1>Preparar Carta de Aceite</h1><p>Incoming • {{ m.student.full_name }}</p>{% endblock %}
+{% block content %}
+<style>.letter46{max-width:950px}.letter46-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.letter46-grid .full{grid-column:1/-1}.letter46-grid label{display:block;font-weight:600}.letter46-grid input,.letter46-grid select{width:100%;box-sizing:border-box;margin-top:5px}.letter46-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}@media(max-width:700px){.letter46-grid{grid-template-columns:1fr}.letter46-grid .full{grid-column:auto}}</style>
+<div class="letter46"><div class="toolbar"><a class="button secondary" href="/mobilidade/{{ m.id }}">← Voltar ao estudante</a></div>
+<section class="card">
+<form id="letter46" method="post" action="/mobilidade/{{ m.id }}/documentos/carta-aceite/docx">
+<div class="letter46-grid">
+<label class="full">Modelo da carta<select name="tipo" id="tipo46" required><option value="geral">Carta de Aceite — Geral</option><option value="laboratorio">Carta de Aceite — Laboratório</option></select></label>
+<label class="full">Nome completo do estudante<input name="nome" value="{{ values46.name }}" required maxlength="220"></label>
+<label>País de origem<input name="pais" value="{{ values46.country }}" required maxlength="150"></label>
+<label>Universidade de origem<input name="universidade" value="{{ values46.university }}" required maxlength="250"></label>
+<div id="general46" class="full"><label>Curso na UFRJ<input id="curso46" name="curso" value="{{ values46.course }}" maxlength="180" required></label></div>
+<div id="lab46" class="full" hidden><div class="letter46-grid"><label class="full">Laboratório<select id="lab-select46" name="laboratorio_id"><option value="">Selecione o laboratório</option>{% for lab in labs46 %}<option value="{{ lab.id }}">{{ lab.name }}</option>{% endfor %}</select></label><label class="full">Professor(es) / supervisor(es)<input id="supervisors46" name="supervisores" maxlength="500" placeholder="Informe os nomes responsáveis pela supervisão"></label></div></div>
+<label>Início do período de estudos<input type="date" name="inicio" required></label><label>Fim do período de estudos<input type="date" name="fim" required></label>
+<label>Data de emissão<input type="date" name="data_emissao" value="{{ values46.today }}" required></label>
+</div>
+<div class="letter46-toolbar"><button class="button primary" type="submit" onclick="this.form.action='/mobilidade/{{ m.id }}/documentos/carta-aceite/docx'">Gerar DOCX</button><button class="button secondary" type="submit" onclick="this.form.action='/mobilidade/{{ m.id }}/documentos/carta-aceite/pdf'">Gerar PDF</button></div>
+</form></section></div>
+<script>(()=>{const s=document.getElementById('tipo46'),g=document.getElementById('general46'),l=document.getElementById('lab46'),c=document.getElementById('curso46'),lab=document.getElementById('lab-select46'),supervisors=document.getElementById('supervisors46');function update(){const a=s.value==='laboratorio';g.hidden=a;l.hidden=!a;c.required=!a;lab.required=a;supervisors.required=a;}s.addEventListener('change',update);update()})();</script>
+{% endblock %}

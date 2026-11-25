@@ -1,0 +1,33 @@
+# Exemplo para o TIC adaptar. Certificado e domínio devem ser os institucionais.
+# No contexto http {}:
+limit_req_zone $binary_remote_addr zone=dari_login:10m rate=6r/m;
+
+server {
+    listen 80;
+    server_name DOMINIO-APROVADO;
+    return 301 https://$host$request_uri;
+}
+server {
+    listen 443 ssl;
+    server_name DOMINIO-APROVADO;
+    ssl_certificate /CAMINHO/INSTITUCIONAL/fullchain.pem;
+    ssl_certificate_key /CAMINHO/INSTITUCIONAL/privkey.pem;
+    client_max_body_size 35m;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    location = /login {
+        limit_req zone=dari_login burst=10 nodelay;
+        proxy_pass http://127.0.0.1:8000;
+        include /etc/nginx/dari-proxy-headers.conf;
+    }
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        include /etc/nginx/dari-proxy-headers.conf;
+    }
+}
+# Conteúdo de /etc/nginx/dari-proxy-headers.conf:
+# proxy_set_header Host $host;
+# proxy_set_header X-Real-IP $remote_addr;
+# proxy_set_header X-Forwarded-For $remote_addr;
+# proxy_set_header X-Forwarded-Proto $scheme;
+# proxy_read_timeout 120s;
+# proxy_connect_timeout 10s;

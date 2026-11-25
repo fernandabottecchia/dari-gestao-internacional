@@ -1,0 +1,28 @@
+/* DARI v53.48.9 — documentos por processo, responsivo e sem sobreposicoes. */
+.dari-student-doc-card{margin-top:1rem;min-width:0}
+.dari-student-doc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1rem}
+.dari-student-doc-head h2{margin:0 0 .35rem}
+.dari-student-doc-head p,.dari-student-doc-empty{margin:.15rem 0;color:#617182;font-size:.92rem}
+.dari-student-doc-count{background:#eff4f8;color:#526677;border:1px solid #dce6ed;border-radius:999px;padding:.28rem .65rem;font-size:.8rem;white-space:nowrap}
+.dari-student-doc-items{display:flex;flex-direction:column;gap:.15rem;border-top:1px solid #e5ebf0}
+.dari-student-doc-item{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1rem .1rem;border-bottom:1px solid #e5ebf0;min-width:0}
+.dari-student-doc-description{display:flex;align-items:center;gap:.75rem;min-width:0;flex:1}
+.dari-student-doc-file-icon{width:2.1rem;height:2.1rem;display:grid;place-items:center;border-radius:9px;background:#eef5f4;color:#2c7779;font-size:1.25rem;flex-shrink:0}
+.dari-student-doc-text{display:flex;flex-direction:column;gap:.22rem;min-width:0}
+.dari-student-doc-name{color:#1d5564;font-weight:600;overflow-wrap:anywhere}
+.dari-student-doc-text small{color:#687887;overflow-wrap:anywhere}
+.dari-student-doc-buttons{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.dari-student-doc-buttons form{margin:0}
+.dari-student-doc-delete{color:#9a3333!important;border-color:#edc9c9!important;background:#fffafa!important}
+.dari-student-doc-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:1rem;align-items:end;padding-top:1.15rem}
+.dari-student-doc-field{display:flex;flex-direction:column;gap:.45rem;min-width:0}
+.dari-student-doc-field label{font-size:.85rem;color:#34465c;font-weight:600}
+.dari-student-doc-field input{width:100%;min-width:0;box-sizing:border-box;min-height:40px}
+.dari-student-doc-field input[type=file]{border:1px solid #d9e2ea;border-radius:8px;background:#fff;padding:.45rem}
+.dari-student-doc-submit{display:flex;align-items:flex-end}
+.dari-student-doc-submit button{white-space:nowrap}
+.dari-student-doc-hint{grid-column:1/-1;color:#708090;font-size:.8rem;margin:0}
+.dari-student-doc-sync,.dari-student-doc-notice{font-size:.82rem;color:#687887;margin:.85rem 0 0}
+.dari-student-doc-notice{color:#28646a}
+@media(max-width:1000px){.dari-student-doc-form{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.dari-student-doc-submit{grid-column:1/-1}}
+@media(max-width:700px){.dari-student-doc-head,.dari-student-doc-item{flex-direction:column;align-items:stretch}.dari-student-doc-buttons{justify-content:flex-start}.dari-student-doc-form{grid-template-columns:minmax(0,1fr)}.dari-student-doc-submit{grid-column:auto}.dari-student-doc-submit button{width:100%}}

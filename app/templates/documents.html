@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}DARI • {{ area_title }} • Documentos{% endblock %}
+{% block heading %}
+<h1>{{ area_title }} • Documentos</h1>
+<p>{{ area_description }}</p>
+{% endblock %}
+{% block content %}
+<div class="doc-breadcrumb">
+  <a href="/{{ area }}">{{ area_title }}</a>
+  <span>›</span>
+  <a href="/{{ area }}/documentos">Documentos</a>
+  {% for crumb in breadcrumbs %}
+    <span>›</span><a href="{{ crumb.href }}">{{ crumb.name }}</a>
+  {% endfor %}
+</div>
+
+{% if status %}
+<div class="doc-feedback success">
+  {% if status == "pasta_criada" %}Pasta criada.{% elif status == "arquivo_enviado" %}Arquivo salvo no SQLite local.{% elif status == "renomeado" %}Item renomeado.{% elif status == "excluido" %}Item excluído do repositório local.{% elif status == "sincronizado" %}Documentos sincronizados com o servidor central.{% endif %}
+</div>
+{% endif %}
+{% if erro %}
+<div class="doc-feedback error">
+  {% if erro == "ja_existe" %}Já existe um item com esse nome.{% elif erro == "pasta_invalida" %}A pasta informada não existe.{% elif erro == "arquivo_grande" %}Arquivo acima do limite permitido (30 MB).{% elif erro == "central_indisponivel" %}O servidor central não está disponível; os arquivos continuam no SQLite local.{% else %}Não foi possível concluir a operação.{% endif %}
+</div>
+{% endif %}
+
+<div class="document-toolbar">
+  <div>
+    <a class="button secondary" href="/{{ area }}">← Voltar para {{ area_title }}</a>
+    {% if current_path %}<a class="button secondary" href="{{ parent_href }}">Pasta anterior</a>{% endif %}
+  </div>
+  {% if can_manage_documents %}
+  <div class="document-create-actions">
+    <details class="document-action-popover">
+      <summary class="button secondary">Nova pasta</summary>
+      <form method="post" action="/{{ area }}/documentos/pasta" class="document-mini-form">
+        <input type="hidden" name="pasta_atual" value="{{ current_path }}">
+        <label>Nome da pasta<input name="nome" required maxlength="180"></label>
+        <button class="button primary" type="submit">Criar</button>
+      </form>
+    </details>
+    <details class="document-action-popover">
+      <summary class="button primary">Adicionar arquivo</summary>
+      <form method="post" action="/{{ area }}/documentos/enviar" enctype="multipart/form-data" class="document-mini-form">
+        <input type="hidden" name="pasta_atual" value="{{ current_path }}">
+        <label>Arquivo<input type="file" name="arquivo" required></label>
+        <button class="button primary" type="submit">Enviar</button>
+      </form>
+    </details>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card document-browser">
+  <div class="document-browser-head">
+    <div class="folder-icon large">▰</div>
+    <div><h2>{{ current_name }}</h2><p>{{ items|length }} item(ns)</p></div>
+  </div>
+
+  {% if items %}
+  <div class="document-list">
+    {% for item in items %}
+    <div class="document-row">
+      <a class="document-main-link" href="{{ item.href }}"{% if item.kind == "file" %} target="_blank"{% endif %}>
+        <span class="document-kind-icon">{{ "▰" if item.kind == "folder" else "DOC" }}</span>
+        <span class="document-item-copy">
+          <strong>{{ item.name }}</strong>
+          <small>{{ "Pasta" if item.kind == "folder" else "Arquivo" }} • Atualizado em {{ item.modified }}</small>
+        </span>
+      </a>
+
+      {% if can_manage_documents %}
+      <div class="document-row-actions">
+        <details class="document-action-popover row-action">
+          <summary class="button secondary small">Renomear</summary>
+          <form method="post" action="/{{ area }}/documentos/renomear" class="document-mini-form">
+            <input type="hidden" name="pasta_atual" value="{{ current_path }}">
+            <input type="hidden" name="caminho" value="{{ item.path }}">
+            <label>Novo nome<input name="novo_nome" value="{{ item.name }}" required maxlength="180"></label>
+            <button class="button primary" type="submit">Salvar</button>
+          </form>
+        </details>
+        <form method="post" action="/{{ area }}/documentos/excluir" class="document-delete-form" data-confirm-delete="{{ item.name }}">
+          <input type="hidden" name="pasta_atual" value="{{ current_path }}">
+          <input type="hidden" name="caminho" value="{{ item.path }}">
+          <button class="button danger small" type="submit">Excluir</button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-docs">
+    <div class="pdf-icon">DOC</div>
+    <h2>Esta pasta está vazia</h2>
+    {% if can_manage_documents %}
+      <p>Crie uma subpasta ou envie um arquivo para o banco SQLite local do Sistema DARI.</p>
+    {% else %}
+      <p>Não há arquivos nesta pasta.</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<script>
+(() => {
+  document.querySelectorAll('[data-confirm-delete]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+      const name = form.getAttribute('data-confirm-delete') || 'este item';
+      if (!window.confirm(`Excluir "${name}" do repositório de documentos da DARI? A exclusão será replicada ao servidor central quando estiver acessível. Esta ação não altera o Google Drive.`)) {
+        event.preventDefault();
+      }
+    });
+  });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}DARI • Editar {{ mobility.student.full_name }}{% endblock %}
+{% block heading %}<h1>Editar {{ 'incoming' if direction=='incoming' else 'outgoing' }}</h1>{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="/static/mobility-edit-v53-35.css?v=53.44">
+<link rel="stylesheet" href="/static/mobility-edit-footer-v53-48-11.css?v=53.48.11">
+<form id="dari-mobility-edit-form" method="post" class="mobility-edit35"><div class="detail-grid">
+<section class="card detail-card"><h2>Estudante</h2><div class="form-grid"><label>Nome completo<input name="name" value="{{ mobility.student.full_name }}" required></label>
+<label>E-mail<input type="email" name="email" value="{{ mobility.student.email or '' }}"></label>
+<label>DRE<input name="dre" value="{{ mobility.student.dre or '' }}"></label>
+<label>Passaporte<input name="passport" value="{{ mobility.student.passport or '' }}"></label>
+</div></section>
+<section class="card detail-card"><h2>Mobilidade</h2><div class="form-grid"><label>Curso<select name="course_id"><option value="0">Não informado</option>{% for x in courses %}<option value="{{x.id}}" {{ 'selected' if mobility.course_id==x.id else '' }}>{{x.name}}</option>{% endfor %}</select></label>
+<label>Programa/Projeto<select name="program_id"><option value="0">Não informado</option>{% for x in programs %}<option value="{{x.id}}" {{ 'selected' if mobility.program_id==x.id else '' }}>{{x.name}}</option>{% endfor %}</select></label>
+<label>Coordenador<select name="coordinator_id"><option value="0">Não informado</option>{% for x in coordinators %}<option value="{{x.id}}" {{ 'selected' if mobility.coordinator_id==x.id else '' }}>{{x.name}}</option>{% endfor %}</select></label>
+<label class="span-2">Informar período por<select name="period_mode" id="period-mode40"><option value="semesters" {% if schedule40.mode=='semesters' %}selected{% endif %}>Semestre e duração</option><option value="dates" {% if schedule40.mode=='dates' %}selected{% endif %}>Datas de início e fim</option></select></label>
+<label data-period-semesters>Semestre<input name="semester_label" value="{{ mobility.start_semester.label if mobility.start_semester else '' }}" required pattern="[0-9]{4}/[12]" maxlength="6" placeholder="Ex. 2029/2" title="Informe quatro algarismos, barra e 1 ou 2. Ex.: 2029/1"></label>
+<label data-period-dates>Data de início<input type="date" name="mobility_start_date" value="{{ schedule40.start_date or '' }}"></label>
+<label data-period-dates>Data de fim<input type="date" name="mobility_end_date" value="{{ schedule40.end_date or '' }}"></label>
+
+<label>Tipo de mobilidade<select name="mobility_type">{% for opt in mobility_type_options %}<option value="{{ opt }}" {{ 'selected' if mobility.mobility_type==opt else '' }}>{{ opt }}</option>{% endfor %}</select></label>
+<label data-period-semesters>Duração (semestres)<input type="number" min="1" max="100" name="duration_semesters" value="{{ mobility.duration_semesters if mobility.duration_semesters is not none else '' }}"></label>
+<label class="span-2">Semestre de retorno<input name="expected_return_period" id="return-period41" pattern="[0-9]{4}/[12]" maxlength="6" placeholder="Ex. 2029/1" value="{{ forecast40.return_period or '' }}"></label>
+<input type="hidden" name="period_priority" id="period-priority41" value="duration">
+<p id="period-feedback41" class="span-2" aria-live="polite"></p>
+<p class="span-2 period-note44" data-period-dates>O retorno previsto é recalculado ao salvar. Datas são associadas aos períodos do calendário acadêmico.</p>
+<label class="span-2">Status<select name="status_choice" id="status-choice" required>
+{% for value,label in [('unclassified','Sem classificação'),('active','Ativo'),('completed','Processo concluído'),('cancelled','Desistente / cancelado')] %}<option value="{{ value }}" {% if status_choice35==value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+
+<option value="custom" {% if status_choice35=='custom' %}selected{% endif %}>Personalizado</option>
+</select></label><div id="custom-status-fields" class="span-2" {% if status_choice35!='custom' %}hidden{% endif %}><label>Texto do status personalizado<input name="status" id="custom-status-text" value="{{ mobility.status or '' }}" {% if status_choice35=='custom' %}required{% else %}disabled{% endif %}></label></div>
+</div></section>
+<section class="card detail-card"><h2>{{ 'Instituição de origem' if direction=='incoming' else 'Destino' }}</h2><div class="form-grid">{% set current_uni = mobility.home_university_id if direction=='incoming' else mobility.destination_university_id %}
+<label>{{ 'Instituição de origem' if direction=='incoming' else 'Universidade de destino' }}<select name="university_id"><option value="0">Não informado</option>{% for x in universities %}<option value="{{x.id}}" {{ 'selected' if current_uni==x.id else '' }}>{{x.name}}</option>{% endfor %}</select></label>
+</div></section>
+<section class="card detail-card">{% if direction=='incoming' %}
+{% set d=mobility.incoming_detail %}
+<h2>Acompanhamento Incoming</h2><div class="form-grid">
+<label>Documento de candidatura<input name="candidate_document" value="{{ d.candidate_document if d and d.candidate_document else '' }}"></label>
+<label>Polimail<input name="polimail" value="{{ d.polimail if d and d.polimail else '' }}"></label>
+<label>Acesso intranet<input name="intranet_access" value="{{ d.intranet_access if d and d.intranet_access else '' }}"></label>
+<label>Identificação<input name="identification" value="{{ d.identification if d and d.identification else '' }}"></label>
+<label>Formulário DARI<input name="dari_form" value="{{ d.dari_form if d and d.dari_form else '' }}"></label>
+<label>Plano de estudos<input name="study_plan" value="{{ d.study_plan if d and d.study_plan else '' }}"></label>
+<label>Responsável<input name="responsible_name" value="{{ d.responsible_name if d and d.responsible_name else '' }}"></label>
+<label>E-mail responsável<input type="email" name="responsible_email" value="{{ d.responsible_email if d and d.responsible_email else '' }}"></label>
+<label class="span-2">Observações da coordenação<textarea name="coordination_notes" rows="3">{{ d.coordination_notes if d and d.coordination_notes else '' }}</textarea></label>
+</div>
+{% else %}
+{% set d=mobility.outgoing_detail %}
+<h2>Acompanhamento Outgoing</h2><div class="form-grid">
+<label>Prorrogação<input name="extension" value="{{ mobility.extension or '' }}"></label>
+<label>Bolsa<input name="scholarship" value="{{ mobility.scholarship or '' }}"></label>
+<label class="span-2">Observações<textarea name="notes" rows="3">{{ mobility.notes or '' }}</textarea></label>
+</div>
+{% endif %}
+</section></div>
+{% include "_editable_form_cards_v53_48_12.html" %}
+</form>
+<link rel="stylesheet" href="/static/student-documents-v53-48-9.css?v=53.48.10">
+<div id="dari-documents-edit-region" data-refresh-url="/mobilidade/{{ mobility.id }}/documentos-estudante/editar-fragmento">
+  {% include '_student_documents_v53_48_10.html' %}
+</div>
+<div class="dari-mobility-edit-actions" aria-label="Ações do processo">
+  <div class="dari-mobility-edit-actions-left">
+    <button class="button primary" type="submit" form="dari-mobility-edit-form">Salvar alterações</button>
+    <a class="button secondary" href="/mobilidade/{{ mobility.id }}">Cancelar</a>
+  </div>
+  <div class="dari-mobility-edit-actions-right">
+    <form method="post" action="/mobilidade/{{ mobility.id }}/excluir"
+          onsubmit="return confirm('Excluir este registro de {{ 'Incoming' if direction == 'incoming' else 'Outgoing' }}? Ele deixará de aparecer nas listagens, mas o histórico e os documentos serão preservados para auditoria.');">
+      <input type="hidden" name="csrf" value="{{ mobility_delete_csrf }}">
+      <button class="button dari-mobility-delete-btn" type="submit">Excluir registro</button>
+    </form>
+  </div>
+</div>
+<script src="/static/student-documents-v53-48-10.js?v=53.48.10" defer></script>
+<script id="calendar-terms41" type="application/json">{{ calendar_terms41 | tojson }}</script>
+<script src="/static/mobility-schedule-v53-41.js?v=53.44"></script>
+<script>
+(() => {
+ const mode=document.getElementById('period-mode40');
+ function periodDisplay(){const dates=mode.value==='dates';document.querySelectorAll('[data-period-dates], [data-period-semesters]').forEach(label=>{const enabled=label.hasAttribute('data-period-dates')===dates;label.hidden=!enabled;label.style.display=enabled?'':'none';label.querySelectorAll('input').forEach(input=>{input.disabled=!enabled;input.required=enabled && input.name!=='duration_semesters';});});}
+ mode.addEventListener('change',periodDisplay);periodDisplay();
+ const select=document.getElementById('status-choice'), custom=document.getElementById('custom-status-fields'), text=document.getElementById('custom-status-text');
+ function display(){const enabled=select.value==='custom';custom.hidden=!enabled;custom.querySelectorAll('input').forEach(el=>el.disabled=!enabled);text.required=enabled;}
+ select.addEventListener('change',display);
+ display();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}DARI • {{ report.title }}{% endblock %}
+{% block heading %}
+<h1>{{ report.title }}</h1>
+<p>{{ report.description }}</p>
+{% endblock %}
+{% block content %}
+<div class="report-page-actions">
+  <a class="button secondary" href="/{% if filter_query %}?{{ filter_query }}{% endif %}">← Voltar ao painel</a>
+  <a class="button" href="/relatorios/{{ report.slug }}/pdf{% if filter_query %}?{{ filter_query }}{% endif %}">Baixar PDF</a>
+  <a class="button" href="/relatorios/{{ report.slug }}/xlsx{% if filter_query %}?{{ filter_query }}{% endif %}">Baixar Excel</a>
+</div>
+<section class="card report-preview">
+  <div class="report-filter-line"><b>Filtros:</b> {{ report.filters|join(' • ') }}</div>
+  {% if report.chart and report.chart.labels %}
+  {% if report.slug == 'mobilidade-universidade' %}
+  <div class="university-limit-toolbar" style="display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:12px 0 16px;">
+    <form method="get" action="/relatorios/{{ report.slug }}" style="margin:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      {% for key, value in filters.items() %}
+        {% if key != 'university_chart_limit' and value not in (none, '') %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}
+      {% endfor %}
+      <label for="university-chart-limit" style="font-size:13px;font-weight:600;">Universidades no gráfico</label>
+      <select name="university_chart_limit" id="university-chart-limit" onchange="this.form.requestSubmit()" aria-label="Quantidade de universidades no gráfico" style="padding:8px 12px;min-width:150px;border:1px solid #d8e1e9;border-radius:8px;background:#fff;color:#243447;">
+        <option value="3" {{ 'selected' if report.university_chart_limit=='3' else '' }}>3 primeiras</option>
+        <option value="5" {{ 'selected' if report.university_chart_limit=='5' else '' }}>5 primeiras</option>
+        <option value="10" {{ 'selected' if report.university_chart_limit=='10' else '' }}>10 primeiras</option>
+      </select>
+    </form>
+  </div>
+  <div class="canvas-wrap report-canvas" style="height:{{ 120 + (report.chart.labels|length) * 36 }}px;"><canvas id="reportChart"></canvas></div>
+    {% else %}
+  {% if report.slug in ('mobilidade-pais', 'mobilidade-curso') %}
+  <div class="category-limit-toolbar" style="margin:12px 0 16px;">
+    <form method="get" action="/relatorios/{{ report.slug }}" style="margin:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+      {% for key, value in filters.items() %}
+        {% if key != 'category_chart_limit' and value not in (none, '') %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endif %}
+      {% endfor %}
+      <label for="category-chart-limit" style="font-size:13px;font-weight:600;">{{ 'Países' if report.slug == 'mobilidade-pais' else 'Cursos' }} no gráfico</label>
+      <select name="category_chart_limit" id="category-chart-limit" onchange="this.form.requestSubmit()" aria-label="Quantidade de categorias exibidas no gráfico" style="padding:8px 12px;min-width:160px;border:1px solid #d8e1e9;border-radius:8px;background:#fff;color:#243447;">
+        <option value="3" {{ 'selected' if report.category_chart_limit=='3' else '' }}>3 primeiras</option>
+        <option value="5" {{ 'selected' if report.category_chart_limit=='5' else '' }}>5 primeiras</option>
+        <option value="10" {{ 'selected' if report.category_chart_limit=='10' else '' }}>10 primeiras</option>
+        <option value="all" {{ 'selected' if report.category_chart_limit=='all' else '' }}>Todas</option>
+      </select>
+    </form>
+  </div>
+  <div class="category-chart-scroll" style="max-height:720px;overflow-y:auto;overflow-x:hidden;" aria-label="Gráfico com rolagem vertical para ver todas as categorias">
+    <div class="canvas-wrap report-canvas" style="height:{{ 80 + (report.chart.labels|length) * 40 }}px;min-height:390px;"><canvas id="reportChart"></canvas></div>
+  </div>
+  {% else %}
+  <div class="canvas-wrap report-canvas"><canvas id="reportChart"></canvas></div>
+  {% endif %}
+  {% endif %}
+  <div class="chart-fallback" id="reportFallback">Carregando gráfico…</div>
+  {% endif %}
+</section>
+<section class="card table-widget" data-table-widget>
+  {% set table_id = "report-" ~ report.slug %}
+  {% set table_label = "Dados do relatório — " ~ report.title %}
+  {% set xlsx_url = "/relatorios/" ~ report.slug ~ "/xlsx" ~ ("?" ~ filter_query if filter_query else "") %}
+  {% include "_table_controls.html" %}
+    <table data-column-table="{{ table_id }}">
+      <thead><tr>{% for c in report.columns %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+      <tbody>
+      {% for row in report.rows %}<tr {% if row and row[0] is string and row[0].startswith('Total') %}style="font-weight:700;background:#edf3f6"{% endif %}>{% for value in row %}<td>{{ value }}</td>{% endfor %}</tr>{% else %}<tr><td colspan="{{ report.columns|length }}">Nenhum registro encontrado para o recorte selecionado.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% if detailed %}
+<section class="card table-widget" id="relatorio-detalhado-consolidado" data-table-widget style="margin-top: 24px;">
+  {% set table_id = "report-detail-" ~ report.slug %}
+  {% set table_label = detailed.title %}
+  {% set xlsx_url = "/relatorios/" ~ detailed.export_slug ~ "/xlsx" ~ ("?" ~ filter_query if filter_query else "") %}
+  {% include "_table_controls.html" %}
+    <table data-column-table="{{ table_id }}">
+      <thead><tr>{% for col in detailed.columns %}<th>{{ col }}</th>{% endfor %}</tr></thead>
+      <tbody>
+      {% for row in detailed.rows %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>{% else %}<tr><td colspan="{{ detailed.columns|length }}">Nenhum registro encontrado.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="consolidated-pagination" style="padding:14px 18px; border-top:1px solid var(--border);">
+    <span>{{ detailed.total }} registros · Página {{ detailed.page }} de {{ detailed.pages }}</span>
+    <div class="mini-actions">
+      {% if report.slug != "mobilidade-semestre" %}<a class="button secondary" href="/relatorios/{{ detailed.export_slug }}/pdf{% if filter_query %}?{{ filter_query }}{% endif %}">PDF da lista</a>{% endif %}
+      {% if detailed.page > 1 %}<a class="button secondary" href="/relatorios/{{ report.slug }}?{{ filter_query ~ '&' if filter_query else '' }}detail_page={{ detailed.page-1 }}#relatorio-detalhado-consolidado">Anterior</a>{% endif %}
+      {% if detailed.page < detailed.pages %}<a class="button secondary" href="/relatorios/{{ report.slug }}?{{ filter_query ~ '&' if filter_query else '' }}detail_page={{ detailed.page+1 }}#relatorio-detalhado-consolidado">Próxima</a>{% endif %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% if report.chart and report.chart.labels %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<script>
+(() => {
+  const spec = {{ report.chart|tojson }};
+  const fallback = document.getElementById('reportFallback');
+  if (!window.Chart) {
+    fallback.textContent='O gráfico não pôde ser carregado. A tabela e os downloads continuam funcionando.';
+    fallback.classList.add('visible');
+    return;
+  }
+  fallback.style.display='none';
+  const palette=['#477d82','#8aaeb1','#9b8b6f','#786d93','#6e9278','#9b6f76','#6d8493','#a0927f'];
+  const text='#536070';
+  const grid='rgba(31, 41, 55, .08)';
+  const showEveryLabel = {{ 'true' if report.slug in ('mobilidade-pais','mobilidade-curso') else 'false' }};
+  const datasets=(spec.datasets || []).map((ds,idx)=>({
+    ...ds,
+    borderColor:palette[idx%palette.length],
+    backgroundColor:spec.type==='doughnut'?palette:(idx===0?'rgba(71,125,130,.78)':'rgba(138,174,177,.78)'),
+    borderRadius:spec.type==='bar'?4:0,
+    ...(showEveryLabel && spec.type==='bar' ? {categoryPercentage:.84,barPercentage:.86,maxBarThickness:27} : {}),
+    tension:.28,
+    fill:false
+  }));
+  let options;
+  if (spec.type==='doughnut') {
+    options={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:text,boxWidth:12}}}};
+  } else if (spec.type==='bar' && spec.orientation==='horizontal') {
+    options={responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0,color:text},grid:{color:grid}},y:{ticks:{color:text,autoSkip:!showEveryLabel,padding:6},grid:{display:false}}}};
+  } else {
+    options={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:text}}},scales:{x:{ticks:{color:text},grid:{display:false}},y:{beginAtZero:true,ticks:{precision:0,color:text},grid:{color:grid}}}};
+  }
+  new Chart(document.getElementById('reportChart'),
+    {type:spec.type,data:{labels:spec.labels,datasets},options});
+})();
+</script>
+{% endif %}
+{% endblock %}

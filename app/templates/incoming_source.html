@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}DARI • Planilha Incoming{% endblock %}
+{% block heading %}<h1>Incoming</h1><p>Consulta à planilha atual da equipe • importação local com origem rastreável</p>{% endblock %}
+{% block content %}
+<div class="incoming-src-wrap">
+  <div class="incoming-src-title">
+    <div><div class="incoming-src-label">FONTE HISTÓRICA E ATUAL • SOMENTE LEITURA</div>
+    <h2>Planilha Incoming — dados importados</h2>
+    <p>Consulte as abas originais, linhas, documentos, observações e campos administrativos preservados.</p></div>
+    <a class="incoming-src-link" href="/incoming">← Voltar ao cadastro operacional de Incoming</a>
+  </div>
+  {% if not batch %}
+  <div class="incoming-src-banner">Nenhuma planilha foi importada para este SQLite ainda. Feche o sistema, execute a instalação local do pacote v43 e abra novamente.</div>
+  {% else %}
+  <div class="incoming-src-banner"><strong>Origem:</strong> {{ batch.original_filename }}. Esta tela representa uma <strong>fotografia dos dados enviados</strong>, com consulta local. As linhas ainda em conciliação não são estudantes/mobilidades novos no cadastro operacional; as abas «Ativos» são registros históricos de seus períodos, não uma confirmação de atividade hoje. Não há sincronização automática nem qualquer alteração no Google Drive.</div>
+  <div class="incoming-src-grid">
+    <div class="incoming-src-stat"><span>Abas preservadas</span><strong>{{ batch.imported_sheets }}</strong><small>Todas as abas do arquivo</small></div>
+    <div class="incoming-src-stat"><span>Linhas com conteúdo</span><strong>{{ total_source_rows }}</strong><small>Inclui cabeçalhos e informações auxiliares</small></div>
+    <div class="incoming-src-stat"><span>Tabelas estruturadas</span><strong>{{ batch.imported_tables }}</strong><small>Estruturas de tabelas originais</small></div>
+    <div class="incoming-src-stat"><span>Abas «Ativos»</span><strong>{{ activity_sheets | length }}</strong><small>Fotografias por semestre — não estudantes adicionais</small></div>
+  </div>
+  <div class="incoming-src-panel">
+    <div class="incoming-src-panel-head"><h3>Explorar registros da planilha</h3><p>Selecione uma aba ou todas; pesquise por nome, DRE, instituição, observações ou outro conteúdo textual. Clique em «Ver todos os campos» para acessar todas as colunas originais.</p></div>
+    <div class="incoming-src-tabs">
+      {% for important in ['2026-2', '2027-1', '2026-1', '2025-2', 'Ativos 2025-1', 'Duplo Diploma'] %}
+        <a class="{{ 'active' if sheet == important else '' }}" href="/incoming/planilha?sheet={{ important | urlencode }}">{{ important }}</a>
+      {% endfor %}
+    </div>
+    <form class="incoming-src-controls" method="get" action="/incoming/planilha">
+      <label>Aba original
+        <select name="sheet">
+          <option value="todas" {% if sheet == 'todas' %}selected{% endif %}>Todas as abas</option>
+          {% for w in sheets %}<option value="{{ w.sheet_name }}" {% if sheet == w.sheet_name %}selected{% endif %}>{{ w.sheet_name }} — {{ sheet_kind_labels.get(w.sheet_kind, w.sheet_kind) }}</option>{% endfor %}
+        </select>
+      </label>
+      <label class="incoming-src-search">Buscar qualquer informação
+        <input name="q" value="{{ q }}" placeholder="Nome, DRE, universidade, observação..." maxlength="120">
+      </label>
+      <label>Tipo de registro
+        <select name="kind">
+          <option value="" {% if not kind %}selected{% endif %}>Todos os tipos</option>
+          {% for typ, label in [('data','Registros semestrais'),('active_snapshot','Fotografias de Ativos'),('catalog_data','Cadastros auxiliares'),('double_degree','Duplo Diploma'),('unclassified_data','Abas sob revisão')] %}
+          <option value="{{ typ }}" {% if kind == typ %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button class="primary" type="submit">Filtrar</button>
+    </form>
+    {% if tables %}
+    <div class="incoming-src-tables">
+      {% for t in tables %}<span><b>{{ t.table_name }}</b> {{ t.sheet_name }} • {{ t.sheet_range }}</span>{% endfor %}
+    </div>
+    {% endif %}
+    {% if rows %}
+    <div class="incoming-src-table-wrap">
+      <table class="incoming-src-table">
+        <thead><tr><th>Aba / Linha</th><th>Nome / Referência</th><th>DRE</th><th>Instituição</th><th>País normalizado¹</th><th>Curso</th><th>Acesso Intranet</th><th>Form. DARI</th><th>Observações / Situação</th><th>Conciliação</th><th>Detalhes</th></tr></thead>
+        <tbody>
+        {% for r in rows %}
+        <tr>
+          <td class="incoming-src-row-num">{% if sheet == 'todas' %}{{ r.sheet_name }} • {% endif %}{{ r.source_row }}</td>
+          <td class="incoming-src-name">{{ r.name }}</td><td>{{ r.dre }}</td><td>{{ r.institution }}</td><td>{{ r.country }}</td><td>{{ r.course }}</td><td>{{ r.intranet }}</td><td>{{ r.dari_form }}</td>
+          <td class="incoming-src-note">{{ r.notes }}</td>
+          <td><span class="incoming-src-review {{ 'linked' if r.review_status == 'linked_exact' else '' }}">{{ 'Vinculado' if r.review_status == 'linked_exact' else ('Em revisão' if r.review_status == 'pending' else r.review_status) }}</span></td>
+          <td><a class="incoming-src-link" href="/incoming/planilha/linha/{{ r.id }}">Ver todos os campos →</a>{% if r.mobility_id %}<div><a class="incoming-src-link" href="/mobilidade/{{ r.mobility_id }}">Abrir mobilidade</a></div>{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="incoming-src-empty">Não foram encontrados registros para os filtros selecionados.</div>
+    {% endif %}
+    <div class="incoming-src-foot"><span>{{ total_rows }} registro(s) para estes filtros • página {{ page }}{% if page_count %} de {{ page_count }}{% endif %}</span>
+      <div class="incoming-src-pages">
+        {% if page > 1 %}<a href="/incoming/planilha?sheet={{ sheet | urlencode }}&q={{ q | urlencode }}&kind={{ kind | urlencode }}&page={{ page - 1 }}">← Anterior</a>{% endif %}
+        {% if page < page_count %}<a href="/incoming/planilha?sheet={{ sheet | urlencode }}&q={{ q | urlencode }}&kind={{ kind | urlencode }}&page={{ page + 1 }}">Próxima →</a>{% endif %}
+      </div>
+    </div>
+  </div>
+  <p class="incoming-src-meta">¹ País normalizado é uma sugestão de apresentação; não altera a fonte, o cadastro histórico, nem une instituições automaticamente. Alguns dados, como datas-seriais e campos livres, exigem revisão humana. Credenciais históricas não foram importadas. Total de linhas-fonte, incluindo linhas vazias: {{ batch.imported_rows }}.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% if form_cards48_12 %}
+<link rel="stylesheet" href="/static/form-response-cards-v53-48-12.css?v=53.48.12">
+<input type="hidden" name="pending_form_response" value="{{ pending_form_response48_12 or 0 }}">
+{% for card in form_cards48_12 %}
+<section class="card dari-response-editor-card" aria-label="Resposta de {{card.source_name}}">
+  <div class="dari-response-editor-head">
+    <h2>{{card.source_name}}</h2>
+    {% if card.pending %}<span class="dari-response-pending">Será vinculada ao salvar</span>{% endif %}
+  </div>
+  <p class="dari-response-origin">{% if card.tab %}Aba: {{card.tab}}{% endif %}{% if card.stage %} · {{card.stage}}{% endif %}</p>
+  <div class="dari-response-fields">
+  {% for field in card.fields %}
+    <label class="dari-response-field">
+      <span>{{field.label}}</span>
+      <input type="hidden" name="form_field_key" value="{{field.key}}">
+      <textarea name="form_field_value" rows="2">{{field.value}}</textarea>
+    </label>
+  {% endfor %}
+  </div>
+</section>
+{% endfor %}
+{% endif %}

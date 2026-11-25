@@ -1,0 +1,190 @@
+<section class="card detail-card span-detail agreement-actions-card">
+  <div class="agreement-actions-head">
+    <h2>Acompanhamento</h2>
+    {% if permissions.acordos.edit %}
+    <button class="button secondary small" type="button" data-open-action-dialog="new">+ Adicionar próximo passo</button>
+    {% endif %}
+  </div>
+
+  <div class="action-flat-list">
+    {% for action in open_actions %}
+    <article class="action-flat-row todo">
+      <div class="history-item-top">
+        <div class="history-item-badges">
+          <span class="action-badge todo">A fazer</span>
+        </div>
+
+        {% if permissions.acordos.edit %}
+        <div class="action-card-tools">
+          <button
+            class="button secondary small"
+            type="button"
+            data-edit-action
+            data-action-id="{{ action.id }}"
+            data-step="{{ action.next_step|e }}"
+            data-deadline="{{ (action.deadline_text or '')|e }}"
+            data-notes="{{ (action.notes or '')|e }}"
+          >Editar</button>
+          <form method="post" action="/acordos/item/{{ a.id }}/acoes/{{ action.id }}/alternar-conclusao" class="inline-form">
+            <label class="history-toggle">
+              <input type="checkbox" onchange="this.form.submit()">
+              <span>Concluído</span>
+            </label>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="history-action-line">
+        <strong>{{ action.next_step }}</strong>
+        <span>{{ action.deadline_text or 'Prazo não informado' }}</span>
+      </div>
+      {% if action.notes %}<p class="history-notes wrap-value">{{ action.notes }}</p>{% endif %}
+    </article>
+    {% endfor %}
+
+    {% for item in history_actions %}
+    <article class="action-flat-row">
+      <div class="history-item-top">
+        <div class="history-item-badges">
+          {% if item.kind == 'step' %}
+            <span class="action-badge done">Concluído</span>
+          {% else %}
+            <span class="action-badge past">Ação realizada</span>
+          {% endif %}
+        </div>
+
+        {% if permissions.acordos.edit and item.kind == 'step' %}
+        <div class="action-card-tools">
+          <button
+            class="button secondary small"
+            type="button"
+            data-edit-action
+            data-action-id="{{ item.action_id }}"
+            data-step="{{ item.text|e }}"
+            data-deadline="{{ (item.deadline or '')|e }}"
+            data-notes="{{ (item.notes or '')|e }}"
+          >Editar</button>
+          <form method="post" action="/acordos/item/{{ a.id }}/acoes/{{ item.action_id }}/alternar-conclusao" class="inline-form">
+            <label class="history-toggle" title="Desmarcar como concluído">
+              <input type="checkbox" checked onchange="this.form.submit()">
+              <span>Concluído</span>
+            </label>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="history-action-line">
+        <strong>{{ item.text }}</strong>
+        <span>{{ item.date.strftime('%d/%m/%Y') if item.date else 'Data não informada' }}</span>
+      </div>
+      {% if item.deadline %}<p class="history-meta">Prazo definido: {{ item.deadline }}</p>{% endif %}
+      {% if item.notes %}<p class="history-notes wrap-value">{{ item.notes }}</p>{% endif %}
+    </article>
+    {% endfor %}
+
+    {% if not open_actions and not history_actions %}
+      <p class="action-list-empty">Nenhum acompanhamento registrado.</p>
+    {% endif %}
+  </div>
+
+  {% if permissions.acordos.edit %}
+  <dialog class="agreement-action-dialog" id="new-action-dialog">
+    <form method="post" action="/acordos/item/{{ a.id }}/acoes" class="dialog-form">
+      <div class="dialog-head">
+        <div><h3>Adicionar próximo passo</h3><p>Registre algo novo a fazer neste acordo.</p></div>
+        <button class="dialog-close" type="button" data-close-dialog aria-label="Fechar">×</button>
+      </div>
+      <label>Próximo passo
+        <textarea name="next_step" rows="3" required placeholder="Ex.: Cobrar retorno da universidade parceira"></textarea>
+      </label>
+      <label>Prazo
+        <input name="deadline_text" placeholder="Ex.: Hoje, 1 semana, 15/10/2026">
+      </label>
+      <label>Observações
+        <textarea name="action_notes" rows="3" placeholder="Detalhes adicionais do acompanhamento."></textarea>
+      </label>
+      <div class="dialog-actions">
+        <button class="button secondary" type="button" data-close-dialog>Cancelar</button>
+        <button class="primary" type="submit">Adicionar passo</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="agreement-action-dialog" id="edit-action-dialog">
+    <form method="post" action="" class="dialog-form" id="edit-action-form">
+      <div class="dialog-head">
+        <div><h3>Editar passo</h3><p>Altere o passo, o prazo ou as observações.</p></div>
+        <button class="dialog-close" type="button" data-close-dialog aria-label="Fechar">×</button>
+      </div>
+      <label>Passo
+        <textarea name="next_step" id="edit-action-step" rows="3" required></textarea>
+      </label>
+      <label>Prazo
+        <input name="deadline_text" id="edit-action-deadline">
+      </label>
+      <label>Observações
+        <textarea name="action_notes" id="edit-action-notes" rows="3"></textarea>
+      </label>
+      <div class="dialog-actions dialog-actions-split">
+        <button class="button danger icon-button" type="button" id="delete-action-button" title="Excluir passo" aria-label="Excluir passo">
+          <span aria-hidden="true">🗑</span>
+        </button>
+        <div class="dialog-actions-right">
+          <button class="button secondary" type="button" data-close-dialog>Cancelar</button>
+          <button class="primary" type="submit">Salvar alterações</button>
+        </div>
+      </div>
+    </form>
+    <form method="post" action="" id="delete-action-form" class="hidden-form"></form>
+  </dialog>
+
+  <script>
+  (() => {
+    const newDialog = document.getElementById('new-action-dialog');
+    const editDialog = document.getElementById('edit-action-dialog');
+    const editForm = document.getElementById('edit-action-form');
+    const editStep = document.getElementById('edit-action-step');
+    const editDeadline = document.getElementById('edit-action-deadline');
+    const editNotes = document.getElementById('edit-action-notes');
+    const deleteButton = document.getElementById('delete-action-button');
+    const deleteForm = document.getElementById('delete-action-form');
+    let editingActionId = null;
+
+    document.querySelectorAll('[data-open-action-dialog="new"]').forEach((button) => {
+      button.addEventListener('click', () => newDialog?.showModal());
+    });
+
+    document.querySelectorAll('[data-edit-action]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const id = button.dataset.actionId;
+        editingActionId = id;
+        editForm.action = `/acordos/item/{{ a.id }}/acoes/${id}/editar`;
+        deleteForm.action = `/acordos/item/{{ a.id }}/acoes/${id}/excluir`;
+        editStep.value = button.dataset.step || '';
+        editDeadline.value = button.dataset.deadline || '';
+        editNotes.value = button.dataset.notes || '';
+        editDialog?.showModal();
+      });
+    });
+
+    deleteButton?.addEventListener('click', () => {
+      if (!editingActionId) return;
+      const confirmed = window.confirm('Deseja realmente excluir este passo? Esta ação exclui apenas o registro do Sistema DARI e não altera a planilha nem o Google Drive.');
+      if (confirmed) deleteForm.submit();
+    });
+
+    document.querySelectorAll('[data-close-dialog]').forEach((button) => {
+      button.addEventListener('click', () => button.closest('dialog')?.close());
+    });
+
+    [newDialog, editDialog].forEach((dialog) => {
+      dialog?.addEventListener('click', (event) => {
+        if (event.target === dialog) dialog.close();
+      });
+    });
+  })();
+  </script>
+  {% endif %}
+</section>

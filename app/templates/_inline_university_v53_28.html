@@ -1,0 +1,6 @@
+<section class="wide"><details><summary>Adicionar nova universidade</summary>
+<div class="admin26-form" style="margin-top:12px">
+<div class="wide"><label for="new_university_name">Nome da universidade</label><input type="text" name="new_university_name" id="new_university_name"></div>
+<div><label for="new_university_acronym">Sigla</label><input type="text" name="new_university_acronym" id="new_university_acronym"></div>
+<div><label for="new_university_country">País</label><select name="new_university_country" id="new_university_country"><option value="">Não informado</option>{% for c in countries %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}</select><details><summary>Adicionar novo país</summary><label for="new_university_country_name">Nome do país</label><input name="new_university_country_name" id="new_university_country_name" type="text"></details></div>
+</div></details></section>

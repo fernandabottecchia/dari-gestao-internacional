@@ -1,0 +1,23 @@
+# Aplicação somente. O banco é fornecido pelo TIC via DATABASE_URL.
+# Ajustar DARI_FORWARDED_ALLOW_IPS ao IP do proxy visto dentro deste contêiner.
+services:
+  web:
+    build: .
+    env_file: .env
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    read_only: true
+    tmpfs:
+      - /tmp:size=512m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    stop_grace_period: 30s
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os,urllib.request,urllib.parse; h=urllib.parse.urlsplit(os.environ['DARI_PUBLIC_URL']).netloc; urllib.request.urlopen(urllib.request.Request('http://127.0.0.1:8000/health/ready',headers={'Host':h}),timeout=5).close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # Se usar Google, o TIC adiciona um volume de credenciais fora do repositório.
+    # Conta de serviço pode ser somente leitura; OAuth refresh requer diretório gravável.

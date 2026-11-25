@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}DARI — {{ record.name }}{% endblock %}
+{% block heading %}<h1>{{ record.name }}</h1>{% endblock %}
+{% block content %}
+<style>.admin-detail{padding:1.5rem;max-width:1000px}.admin-detail label{display:block;margin:1rem 0 .35rem}.admin-detail textarea,.admin-detail input[type=text]{width:100%;padding:.65rem;border:1px solid #dce3e6;border-radius:8px;box-sizing:border-box}.admin-detail textarea{min-height:90px}.deadline-row{padding:1rem;border:1px solid #dce3e6;border-radius:8px;margin:1rem 0}.detail-actions{display:flex;gap:1rem;align-items:center;margin-top:1.5rem}.admin-detail fieldset{border:0;padding:0;margin:0}</style>
+<section class="card admin-detail">
+<a class="button secondary" href="{{ back }}">← Voltar</a>
+{% if saved %}<p role="status">Alterações salvas com sucesso.</p>{% endif %}
+<form method="post">
+<input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="version" value="{{ record.version }}"><input type="hidden" name="voltar" value="{{ back }}">
+{% if kind=='projetos' %}
+<p>Código: {{ record.code or '—' }}</p><p>Situação: <strong>{{ 'Ativo' if record.active else 'Inativo' }}</strong></p>
+{% if editable %}<input type="hidden" name="active" value="{{ 0 if record.active else 1 }}"><button type="submit" class="button primary">{{ 'Marcar como inativo' if record.active else 'Marcar como ativo' }}</button>{% endif %}
+{% else %}
+{% if kind=='universidades' %}<p>Sigla: <strong>{{ record.acronym or '—' }}</strong> · País: {{ record.country or '—' }}</p>{% endif %}
+<fieldset {% if not editable %}disabled{% endif %}>
+{% if kind=='parceiras' %}<label for="name">Nome da parceira</label><input type="text" id="name" name="name" value="{{ record.name }}" required><label><input type="checkbox" name="active" value="1" {% if record.active %}checked{% endif %}> Ativo</label>{% endif %}
+<label for="contacts">Contatos e nomes das pessoas</label><textarea id="contacts" name="contacts">{{ record.contacts }}</textarea>
+<label for="emails">E-mails (um por linha)</label><textarea id="emails" name="emails">{{ record.emails }}</textarea>
+{% if kind=='parceiras' %}
+<h2>Deadlines</h2><p>Use DD/MM para um prazo anual ou DD/MM/AAAA para uma data específica. Deixe a data vazia quando o dia não estiver definido.</p>
+<div id="deadlines">{% for d in deadlines %}<div class="deadline-row">
+<label for="label_{{ loop.index0 }}">Período ou modalidade</label><input type="text" id="label_{{ loop.index0 }}" name="label_{{ loop.index0 }}" value="{{ d.label }}">
+<label for="date_{{ loop.index0 }}">Data limite</label><input type="text" id="date_{{ loop.index0 }}" name="date_{{ loop.index0 }}" value="{{ d.value }}" placeholder="DD/MM ou DD/MM/AAAA">
+<p class="muted">Origem: {{ d.source }}{% if d.raw %} · Texto original: {{ d.raw }}{% endif %}</p>
+<label><input type="checkbox" name="delete_{{ loop.index0 }}" value="1"> Remover este prazo</label></div>{% endfor %}</div>
+<input type="hidden" id="deadline_count" name="deadline_count" value="{{ deadlines|length }}">
+<button type="button" class="button secondary" id="add-deadline">Adicionar prazo</button>
+<label for="links">Links úteis (título | endereço, um por linha)</label><textarea id="links" name="links">{{ record.links }}</textarea>
+{% if links %}<ul>{% for link in links %}<li><a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }}</a></li>{% endfor %}</ul>{% endif %}
+<label for="notes">Observações</label><textarea id="notes" name="notes">{{ record.notes }}</textarea>
+<p class="muted" style="white-space:pre-line">Fonte: {{ record.source }}</p>
+{% endif %}
+{% if editable %}<div class="detail-actions"><button class="button primary" type="submit">Salvar alterações</button></div>{% endif %}
+</fieldset>
+{% endif %}
+</form>
+{% if not editable %}<p class="muted">Seu usuário tem acesso somente à consulta deste cadastro.</p>{% endif %}
+</section>
+{% if kind=='parceiras' and editable %}<script>
+document.getElementById('add-deadline').addEventListener('click',function(){
+ const count=document.getElementById('deadline_count');const i=Number(count.value);if(i>=100)return;
+ const box=document.createElement('div');box.className='deadline-row';
+ for(const [key,title,placeholder] of [['label','Período ou modalidade',''],['date','Data limite','DD/MM ou DD/MM/AAAA']]){
+ const label=document.createElement('label');label.htmlFor=key+'_'+i;label.textContent=title;
+ const input=document.createElement('input');input.type='text';input.id=key+'_'+i;input.name=key+'_'+i;input.placeholder=placeholder;box.append(label,input);}
+ document.getElementById('deadlines').append(box);count.value=i+1;
+});
+</script>{% endif %}
+{% endblock %}

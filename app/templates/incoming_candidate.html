@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}DARI • Pré-cadastro Incoming{% endblock %}
+{% block heading %}<h1>Pré-cadastro Incoming • PR-{{ '%06d'|format(candidate.id) }}</h1><p>Identidade interna em análise, independente da emissão de DRE.</p>{% endblock %}
+{% block content %}
+<div class="toolbar"><a class="button" href="/incoming">← Voltar ao Incoming</a></div>
+<div class="incoming-integration-intro">
+  <strong>{{ candidate.full_name }}</strong>
+  <p><b>Identificador interno:</b> PR-{{ '%06d'|format(candidate.id) }} · <b>DRE:</b> {{ candidate.dre_text or 'Ainda não informado' }} · <b>Situação:</b> Conciliação pendente.</p>
+  <p>Este é um pré-cadastro interno. A presença na planilha não comprova matrícula, aprovação, ingresso efetivo ou uma segunda mobilidade. Não serão emitidos documentos oficiais a partir deste registro até a confirmação.</p>
+</div>
+<section class="card table-widget" data-table-widget>
+ <h2>Registros da planilha associados a esta identidade</h2>
+ <table><thead><tr><th>Período</th><th>Instituição de origem</th><th>País</th><th>Form. DARI</th><th>Intranet</th><th>Observações</th><th>Origem</th></tr></thead>
+ <tbody>{% for r in candidate_rows %}<tr>
+ <td>{{ r.semester or 'Sem período definido' }}</td><td>{{ r.institution }}</td><td>{{ r.country }}</td><td>{{ r.form_dari }}</td><td>{{ r.intranet }}</td><td>{{ r.notes }}</td>
+ <td><a href="/incoming/planilha/linha/{{ r.id }}">{{ r.sheet }} / linha {{ r.row }}</a></td>
+ </tr>{% endfor %}</tbody></table>
+</section>
+{% endblock %}

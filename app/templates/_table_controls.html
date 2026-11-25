@@ -1,0 +1,28 @@
+<div class="column-toolbar" data-table-controls>
+  <div class="column-title"><strong>{{ table_label }}</strong><small>Role a tabela para os lados para consultar todas as informações.</small></div>
+  <div class="column-actions">
+    <details class="column-picker">
+      <summary class="button secondary column-filter-button">
+        <span class="button-icon-start" aria-hidden="true">
+          <svg class="filter-glyph" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <path d="M3.75 5.25H20.25L14.4 11.76V18.14L9.6 20.55V11.76L3.75 5.25Z" fill="currentColor" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span class="button-label">Colunas</span>
+        <span class="button-caret" aria-hidden="true">▾</span>
+      </summary>
+      <div class="column-menu">
+        <strong>Colunas visíveis</strong>
+        <p>Escolha os campos exibidos nesta tabela.</p>
+        <div class="column-options" data-column-options></div>
+        <div class="column-menu-foot"><span data-column-count aria-live="polite"></span><button class="button secondary" type="button" data-restore-columns>Restaurar visualização</button></div>
+      </div>
+    </details>
+    {% if xlsx_url %}
+    <div class="column-exports">
+      <a class="button secondary" data-export-visible href="{{ xlsx_url }}">Excel • visíveis</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+<div class="table-scroll" tabindex="0" role="region" aria-label="{{ table_label }}: tabela com rolagem horizontal">

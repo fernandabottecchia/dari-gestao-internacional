@@ -1,0 +1,621 @@
+{% extends "base.html" %}
+{% block title %}DARI • Painel executivo{% endblock %}
+{% block heading %}
+<h1>Painel executivo</h1>
+<p>{% if demo %}Indicadores, gráficos e relatórios calculados sobre a base de demonstração.{% else %}Indicadores e relatórios de mobilidade acadêmica internacional.{% endif %}</p>
+{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="/static/mobility-workflow-v53-16.css?v=53.16">
+<link rel="stylesheet" href="/static/dari-single-select-v53-9.css?v=53.9">
+<script defer src="/static/dari-single-select-v53-9.js?v=53.9"></script>
+<section class="card executive-filter-card">
+  <div class="section-head executive-head">
+    <div>
+      <h2>Filtros do painel</h2>
+      <p class="muted">Os mesmos filtros são levados para as visualizações e exportações em PDF/XLSX.</p>
+    </div>
+    <a class="button secondary" href="/">Limpar filtros</a>
+  </div>
+    <form class="executive-filters" method="get" action="/">
+    <div class="dari-period-field"><label for="dari-start-semester">Período inicial</label>
+      <select class="dari-single-native" id="dari-start-semester" name="start_semester">
+        {% for s in options.semesters %}<option value="{{ s.label }}" {{ 'selected' if filters.start_semester == s.label else '' }}>{{ s.label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="dari-period-field"><label for="dari-end-semester">Período final</label>
+      <select class="dari-single-native" id="dari-end-semester" name="end_semester">
+        <option value="" {{ 'selected' if not filters.end_semester else '' }}>Somente o período inicial</option>
+        {% for s in options.semesters %}<option value="{{ s.label }}" {{ 'selected' if filters.end_semester == s.label else '' }}>{{ s.label }}</option>{% endfor %}
+      </select>
+    </div>
+    {% set direction_selected = options.directions if not filters.direction or filters.direction == 'all' else filters.direction.split(',') %}
+    <div class="multi-filter-field"><span class="multi-filter-caption">Mobilidade</span>
+      <div class="multi-select" data-name="direction" data-all-label="Todos" >
+        <input type="hidden" name="direction" value="{{ filters.direction or 'all' }}">
+        <button type="button" class="multi-trigger">Todos</button>
+        <div class="multi-menu">
+          <label class="multi-option"><input type="checkbox" class="multi-all" {% if direction_selected|length == options.directions|length %}checked{% endif %}> <span>Todos</span></label>
+          {% for flow in options.directions %}<label class="multi-option"><input type="checkbox" class="multi-item" value="{{ flow }}" data-label="{{ flow|title }}" {{ 'checked' if flow in direction_selected else '' }}><span>{{ flow|title }}</span></label>{% endfor %}
+        </div>
+      </div>
+    </div>
+    {% set selected_courses = filters.course_id.split(',') if filters.course_id else [] %}
+    <div class="multi-filter-field"><span class="multi-filter-caption">Curso</span>
+      <div class="multi-select" data-name="course_id" data-all-label="Todos">
+        <input type="hidden" name="course_id" value="{{ filters.course_id or '' }}">
+        <button type="button" class="multi-trigger">Todos</button>
+        <div class="multi-menu">
+          <label class="multi-option"><input type="checkbox" class="multi-all" {% if not selected_courses or selected_courses|length == options.courses|length %}checked{% endif %}> <span>Todos</span></label>
+          {% for item in options.courses %}<label class="multi-option"><input type="checkbox" class="multi-item" value="{{ item.id }}" data-label="{{ item.name }}" {{ 'checked' if (not filters.course_id) or item.id|string in selected_courses else '' }}> <span>{{ item.name }}</span></label>{% endfor %}
+        </div>
+      </div>
+    </div>
+    {% set selected_countries = filters.country_id.split(',') if filters.country_id else [] %}
+    <div class="multi-filter-field"><span class="multi-filter-caption">País</span>
+      <div class="multi-select" data-name="country_id" data-all-label="Todos">
+        <input type="hidden" name="country_id" value="{{ filters.country_id or '' }}">
+        <button type="button" class="multi-trigger">Todos</button>
+        <div class="multi-menu">
+          <label class="multi-option"><input type="checkbox" class="multi-all" {% if not selected_countries or selected_countries|length == options.countries|length %}checked{% endif %}> <span>Todos</span></label>
+          {% for item in options.countries %}<label class="multi-option"><input type="checkbox" class="multi-item" value="{{ item.id }}" data-label="{{ item.name }}" {{ 'checked' if (not filters.country_id) or item.id|string in selected_countries else '' }}> <span>{{ item.name }}</span></label>{% endfor %}
+        </div>
+      </div>
+    </div>
+    {% set selected_universities = filters.university_id.split(',') if filters.university_id else [] %}
+    <div class="multi-filter-field"><span class="multi-filter-caption">Universidade</span>
+      <div class="multi-select" data-name="university_id" data-all-label="Todas">
+        <input type="hidden" name="university_id" value="{{ filters.university_id or '' }}">
+        <button type="button" class="multi-trigger">Todas</button>
+        <div class="multi-menu">
+          <label class="multi-option"><input type="checkbox" class="multi-all" {% if not selected_universities or selected_universities|length == options.universities|length %}checked{% endif %}> <span>Todas</span></label>
+          {% for item in options.universities %}<label class="multi-option"><input type="checkbox" class="multi-item" value="{{ item.id }}" data-label="{{ item.name }}" {{ 'checked' if (not filters.university_id) or item.id|string in selected_universities else '' }}> <span>{{ item.name }}</span></label>{% endfor %}
+        </div>
+      </div>
+    </div>
+    {% set selected_types = filters.mobility_type.split(',') if filters.mobility_type else [] %}
+    <div class="multi-filter-field"><span class="multi-filter-caption">Modalidade</span>
+      <div class="multi-select" data-name="mobility_type" data-all-label="Todas as modalidades">
+        <input type="hidden" name="mobility_type" value="{{ filters.mobility_type or '' }}">
+        <button type="button" class="multi-trigger">Todas as modalidades</button>
+        <div class="multi-menu">
+          <label class="multi-option"><input type="checkbox" class="multi-all" {% if not selected_types or selected_types|length == options.mobility_types|length %}checked{% endif %}> <span>Todas</span></label>
+          {% for kind in options.mobility_types %}<label class="multi-option"><input type="checkbox" class="multi-item" value="{{ kind }}" data-label="{{ kind }}" {{ 'checked' if (not filters.mobility_type) or kind in selected_types else '' }}> <span>{{ kind }}</span></label>{% endfor %}
+        </div>
+      </div>
+    </div>
+    <!-- DARI_V53_16_DASHBOARD_FILTER -->
+    <div class="workflow-simple-filter">
+      <span class="multi-filter-caption">Situação dos estudantes</span>
+      <label class="workflow-simple-check">
+        <input type="checkbox" name="process_active" value="1" {{ 'checked' if filters.process_active == '1' else '' }}>
+        <span>Apenas alunos ativos</span>
+      </label>
+    </div>
+    <div class="filter-submit"><button class="button primary" type="submit">Aplicar filtros</button></div>
+  </form>
+  <div class="filter-summary"><b>Recorte atual:</b> {{ filter_summary|join(' • ') }}</div>
+</section>
+
+<div class="cards executive-metrics" style="grid-template-columns:repeat(auto-fit,minmax(175px,1fr));">
+  <div class="card metric"><span>Mobilidades</span><strong>{{ mobility_count }}</strong><small>processos no recorte</small></div>
+  <div class="card metric"><span>Incoming</span><strong>{{ incoming_count }}</strong><small>processos encontrados</small></div>
+  <div class="card metric"><span>Outgoing</span><strong>{{ outgoing_count }}</strong><small>processos encontrados</small></div>
+  <div class="card metric"><span>Universidades</span><strong>{{ represented_universities }}</strong><small>instituições representadas</small></div>
+</div>
+
+<div class="executive-grid">
+  <section class="card chart-card chart-wide">
+    <div class="section-head">
+      <div><h2>Mobilidade por semestre</h2><p class="muted">Incoming e Outgoing ao longo dos períodos.</p></div>
+      <div class="mini-actions">
+        <a href="/relatorios/mobilidade-semestre{% if filter_query %}?{{ filter_query }}{% endif %}">Visualizar</a>
+        <a href="/relatorios/mobilidade-semestre/pdf{% if filter_query %}?{{ filter_query }}{% endif %}">PDF</a>
+        <a href="/relatorios/mobilidade-semestre/xlsx{% if filter_query %}?{{ filter_query }}{% endif %}">XLSX</a>
+      </div>
+    </div>
+    <div class="canvas-wrap"><canvas id="semesterChart"></canvas></div>
+    <div class="chart-fallback" id="semesterFallback">Carregando gráfico…</div>
+  </section>
+
+  <section class="card chart-card">
+    <div class="section-head"><div><h2>Mobilidade por país</h2><p class="muted">Origem no Incoming e destino no Outgoing.</p></div>
+      <div class="mini-actions"><a href="/relatorios/mobilidade-pais{% if filter_query %}?{{ filter_query }}{% endif %}">Ver</a><a href="/relatorios/mobilidade-pais/pdf{% if filter_query %}?{{ filter_query }}{% endif %}">PDF</a><a href="/relatorios/mobilidade-pais/xlsx{% if filter_query %}?{{ filter_query }}{% endif %}">XLSX</a></div>
+    </div>
+    <div class="canvas-wrap medium" style="height:380px;"><canvas id="countryChart"></canvas></div>
+  </section>
+
+  <section class="card chart-card">
+    <div class="section-head"><div><h2>Mobilidade por curso</h2><p class="muted">Processos vinculados aos cursos da UFRJ.</p></div>
+      <div class="mini-actions"><a href="/relatorios/mobilidade-curso{% if filter_query %}?{{ filter_query }}{% endif %}">Ver</a><a href="/relatorios/mobilidade-curso/pdf{% if filter_query %}?{{ filter_query }}{% endif %}">PDF</a><a href="/relatorios/mobilidade-curso/xlsx{% if filter_query %}?{{ filter_query }}{% endif %}">XLSX</a></div>
+    </div>
+    <div class="canvas-wrap medium" style="height:380px;"><canvas id="courseChart"></canvas></div>
+  </section>
+
+  <section class="card chart-card">
+    <div class="section-head"><div><h2>Mobilidade por universidade</h2><p class="muted">Instituições com maior volume no recorte.</p></div>
+      <div class="mini-actions"><a href="/relatorios/mobilidade-universidade{% if filter_query %}?{{ filter_query }}{% endif %}">Ver</a><a href="/relatorios/mobilidade-universidade/pdf{% if filter_query %}?{{ filter_query }}{% endif %}">PDF</a><a href="/relatorios/mobilidade-universidade/xlsx{% if filter_query %}?{{ filter_query }}{% endif %}">XLSX</a></div>
+    </div>
+    <div class="canvas-wrap medium" style="height:380px;"><canvas id="universityChart"></canvas></div>
+  </section>
+
+  <section class="card chart-card">
+    <div class="section-head"><div><h2>Tipos de mobilidade</h2><p class="muted">Distribuição dos tipos cadastrados.</p></div>
+      <div class="mini-actions"><a href="/relatorios/mobilidade-tipo{% if filter_query %}?{{ filter_query }}{% endif %}">Ver</a><a href="/relatorios/mobilidade-tipo/pdf{% if filter_query %}?{{ filter_query }}{% endif %}">PDF</a><a href="/relatorios/mobilidade-tipo/xlsx{% if filter_query %}?{{ filter_query }}{% endif %}">XLSX</a></div>
+    </div>
+    <div class="canvas-wrap medium" style="height:380px;"><canvas id="typeChart"></canvas></div>
+  </section>
+
+  <section class="card chart-card chart-wide" id="dari-agreements-panel">
+    <div class="section-head"><div><h2 id="agdb-chart-heading">Acordos</h2><p class="muted" id="agdb-chart-description">Distribuição dos acordos por país.</p></div>
+      <div class="mini-actions"><a data-ag-link href="/acordos/analise">Visualizar</a><a data-ag-link href="/acordos/analise/pdf">PDF</a><a data-ag-link href="/acordos/analise/xlsx">XLSX</a></div>
+    </div>
+    <div class="agdb-heading">
+      <h3>Filtros de acordos</h3>
+      <button class="button secondary" type="reset" form="ag-dashboard-filters">Limpar filtros</button>
+    </div>
+    <form id="ag-dashboard-filters" class="agdb-fields" autocomplete="off">
+      <div class="agdb-field"><label id="agdb-type-title">Tipo de acordo</label>
+        <div class="agdb-multi" data-field="a_type" data-label="Todos">
+          <input type="hidden" name="a_type" value="">
+          <button type="button" class="agdb-trigger" aria-labelledby="agdb-type-title" aria-expanded="false">Todos</button>
+          <div class="agdb-dropdown"></div>
+        </div>
+      </div>
+      <div class="agdb-field"><label id="agdb-status-title">Status de vigência</label>
+        <div class="agdb-multi" data-field="a_status" data-label="Todos">
+          <input type="hidden" name="a_status" value="">
+          <button type="button" class="agdb-trigger" aria-labelledby="agdb-status-title" aria-expanded="false">Todos</button>
+          <div class="agdb-dropdown"></div>
+        </div>
+      </div>
+      <div class="agdb-field"><label id="agdb-university-title">Universidade</label>
+        <div class="agdb-multi" data-field="a_university" data-label="Todas">
+          <input type="hidden" name="a_university" value="">
+          <button type="button" class="agdb-trigger" aria-labelledby="agdb-university-title" aria-expanded="false">Todas</button>
+          <div class="agdb-dropdown"></div>
+        </div>
+      </div>
+      <div class="agdb-field"><label id="agdb-country-title">País</label>
+        <div class="agdb-multi" data-field="a_country" data-label="Todos">
+          <input type="hidden" name="a_country" value="">
+          <button type="button" class="agdb-trigger" aria-labelledby="agdb-country-title" aria-expanded="false">Todos</button>
+          <div class="agdb-dropdown"></div>
+        </div>
+      </div>
+      <div class="agdb-field"><label for="agdb-year">Ano de referência</label>
+        <input class="agdb-input" type="number" id="agdb-year" name="a_year" placeholder="Ex.: 2016" min="1900" max="2100" value="">
+      </div>
+      <div class="agdb-field"><label for="agdb-mode">Critério temporal</label>
+        <select class="agdb-select dari-single-native" name="date_mode" id="agdb-mode"><option value="vigencia">Vigência</option><option value="assinatura" selected>Assinatura</option></select>
+      </div>
+      <div class="agdb-apply"><button class="button primary" type="submit">Aplicar filtros</button><div class="agdb-quick"><button class="button secondary" type="button" id="agdb-only-progress" aria-pressed="false">Acordos em andamento</button><button class="button secondary" type="button" id="agdb-expiring-180" aria-pressed="false">Vencimentos Próximos (180 dias)</button></div></div>
+    </form>
+    <p id="ag-dashboard-summary" class="muted" aria-live="polite"></p>
+    <div class="canvas-wrap medium" id="agdb-chart-wrap"><canvas id="agreementChart"></canvas></div>
+    <div id="agdb-expiring-results" hidden>
+      <p class="muted" id="agdb-expiring-dates"></p>
+      <div style="overflow-x:auto;max-width:100%"><table class="agdb-expiring-table"><thead><tr><th>Universidade</th><th>País</th><th>Tipo</th><th>SEI</th><th>Andamento</th><th>Status</th><th>Vencimento</th><th>Ações</th></tr></thead><tbody id="agdb-expiring-body"></tbody></table></div>
+    </div>
+  </section>
+</div>
+
+<style>
+/* Os filtros múltiplos seguem o mesmo padrão dos campos Período inicial/final. */
+.executive-filters .multi-filter-field {
+  display:block;
+  min-width:0;
+}
+.executive-filters .multi-filter-caption {
+  display:block;
+  color:#4d596a;
+  font-size:12px;
+  font-weight:600;
+  line-height:normal;
+}
+.executive-filters .multi-select {
+  position:relative;
+  margin-top:6px;
+  min-width:0;
+  font-weight:400;
+}
+.executive-filters .multi-trigger {
+  display:flex;
+  width:100%;
+  min-height:38px;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin:0;
+  padding:9px 10px;
+  background:#fff;
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:8px;
+  box-sizing:border-box;
+  font:inherit;
+  font-size:13px;
+  font-weight:600;
+  line-height:normal;
+  text-align:left;
+  cursor:pointer;
+}
+.executive-filters .multi-trigger::after {
+  content:"▾";
+  color:var(--muted);
+  font-size:12px;
+  flex-shrink:0;
+}
+.executive-filters .multi-trigger:hover {
+  border-color:#bfcbd4;
+}
+.executive-filters .multi-trigger:focus-visible {
+  outline:2px solid var(--accent);
+  outline-offset:1px;
+}
+.executive-filters .multi-menu {
+  display:none;
+  position:absolute;
+  z-index:30;
+  top:calc(100% + 6px);
+  left:0;
+  right:0;
+  padding:6px;
+  max-height:250px;
+  overflow-y:auto;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:8px;
+  box-shadow:0 10px 24px #18243324;
+}
+.executive-filters .multi-select.open .multi-menu {
+  display:block;
+}
+.executive-filters .multi-option {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:0;
+  padding:7px 8px;
+  border-radius:6px;
+  color:var(--text);
+  font-size:13px;
+  font-weight:400;
+  line-height:1.3;
+  cursor:pointer;
+}
+.executive-filters .multi-option:hover {
+  background:#f3f7f8;
+}
+.executive-filters .multi-option input[type="checkbox"] {
+  flex:none;
+  width:16px;
+  height:16px;
+  margin:0;
+  padding:0;
+  accent-color:var(--accent);
+}
+.executive-filters .multi-option span {
+  overflow-wrap:normal;
+  word-break:normal;
+}
+</style>
+
+<style>
+/* Acordos no painel: os mesmos filtros e menus múltiplos da página Visualizar. */
+#dari-agreements-panel .agdb-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px}
+#dari-agreements-panel .agdb-heading h3{font-size:15px;margin:0}
+#dari-agreements-panel .agdb-fields{display:grid;grid-template-columns:repeat(3,minmax(170px,1fr));gap:14px;margin:15px 0}
+#dari-agreements-panel .agdb-field{display:block;min-width:0}
+#dari-agreements-panel .agdb-field>label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:6px}
+#dari-agreements-panel .agdb-input,#dari-agreements-panel .agdb-select,#dari-agreements-panel .agdb-trigger{width:100%;height:40px;box-sizing:border-box;border:1px solid #dbe3ea;border-radius:8px;background:#fff;color:#172333;font-size:13px;font-weight:600;padding:8px 11px}
+#dari-agreements-panel .agdb-trigger{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;text-align:left}
+#dari-agreements-panel .agdb-trigger::after{content:'▾';color:#64748b;font-size:12px}
+#dari-agreements-panel .agdb-multi{position:relative;min-width:0}
+#dari-agreements-panel .agdb-dropdown{display:none;position:absolute;left:0;right:0;top:calc(100% + 5px);z-index:35;border:1px solid #dbe3ea;border-radius:9px;max-height:235px;overflow-y:auto;overflow-x:hidden;background:#fff;box-shadow:0 12px 30px rgba(17,24,39,.15);padding:5px}
+#dari-agreements-panel .agdb-multi.open .agdb-dropdown{display:block}
+#dari-agreements-panel .agdb-choice{display:flex;align-items:center;gap:9px;font-size:12px;line-height:1.35;font-weight:400;padding:7px 9px;cursor:pointer;border-radius:5px;white-space:normal;overflow-wrap:anywhere}
+#dari-agreements-panel .agdb-choice:hover{background:#f1f5f9}
+#dari-agreements-panel .agdb-choice input{flex:0 0 16px;width:16px;height:16px;margin:0;accent-color:#36747a}
+#dari-agreements-panel .agdb-apply{grid-column:1/-1;display:flex;align-items:center;gap:10px;flex-wrap:wrap;width:100%}
+#dari-agreements-panel .agdb-quick{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
+#dari-agreements-panel .agdb-apply .button{min-height:40px}
+#dari-agreements-panel .agdb-expiring-table{width:100%;border-collapse:collapse;font-size:12px;min-width:960px}
+#dari-agreements-panel .agdb-expiring-table th{padding:10px;background:#f6f8fa;text-align:left;color:#45576d;font-size:11px;text-transform:uppercase}
+#dari-agreements-panel .agdb-expiring-table td{padding:10px;border-bottom:1px solid #e4ebf1;vertical-align:top;overflow-wrap:anywhere}
+#dari-agreements-panel .agdb-expiring-table a{font-weight:600;text-decoration:none}
+#dari-agreements-panel .agdb-expiring-table a:hover{text-decoration:underline}
+#dari-agreements-panel .agdb-hint{font-size:12px;color:#667788;margin-top:3px}
+@media(max-width:850px){ #dari-agreements-panel .agdb-fields{grid-template-columns:repeat(2,minmax(160px,1fr))}}
+@media(max-width:550px){ #dari-agreements-panel .agdb-fields{grid-template-columns:1fr}}
+</style>
+
+<div id="consultas-access">
+{% include "_consultas_access_conteudo.html" %}
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<script>
+(() => {
+  const specs = {{ charts|tojson }};
+  const fallback = document.getElementById('semesterFallback');
+  if (!window.Chart) {
+    fallback.textContent = 'Não foi possível carregar o componente gráfico. Os relatórios e exportações continuam disponíveis.';
+    fallback.classList.add('visible');
+    return;
+  }
+  fallback.style.display = 'none';
+
+  const palette = ['#477d82','#8aaeb1','#9b8b6f','#786d93','#6e9278','#9b6f76','#6d8493','#a0927f'];
+  const text = '#536070';
+  const grid = 'rgba(31, 41, 55, .08)';
+
+  function configFor(spec, chartId) {
+    const showEveryLabel = ["countryChart", "courseChart", "universityChart"].includes(chartId);
+    const datasets = (spec.datasets || []).map((ds, idx) => ({
+      ...ds,
+      borderColor: palette[idx % palette.length],
+      backgroundColor: spec.type === 'doughnut' ? palette : (idx === 0 ? 'rgba(71,125,130,.78)' : 'rgba(138,174,177,.78)'),
+      borderRadius: spec.type === 'bar' ? 4 : 0,
+      ...(showEveryLabel && spec.type === 'bar' ? {categoryPercentage:.84, barPercentage:.86, maxBarThickness:27} : {}),
+      tension: .28,
+      fill: false
+    }));
+
+    if (spec.type === 'doughnut') {
+      return {
+        type: 'doughnut',
+        data: {labels: spec.labels, datasets},
+        options: {responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{color:text, boxWidth:12}}}}
+      };
+    }
+
+    if (spec.type === 'bar' && spec.orientation === 'horizontal') {
+      return {
+        type: 'bar',
+        data: {labels: spec.labels.slice(0, 10), datasets: datasets.map(ds => ({...ds, data: ds.data.slice(0, 10)}))},
+        options: {
+          responsive:true,
+          maintainAspectRatio:false,
+          indexAxis:'y',
+          plugins:{legend:{display:false}},
+          scales:{
+            x:{beginAtZero:true,ticks:{precision:0,color:text},grid:{color:grid}},
+            y:{ticks:{color:text,autoSkip:!showEveryLabel,padding:5},grid:{display:false}}
+          }
+        }
+      };
+    }
+
+    return {
+      type: spec.type,
+      data: {labels: spec.labels, datasets},
+      options: {
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{legend:{labels:{color:text}}},
+        scales:{
+          x:{ticks:{color:text},grid:{display:false}},
+          y:{beginAtZero:true,ticks:{precision:0,color:text},grid:{color:grid}}
+        }
+      }
+    };
+  }
+
+  const bindings = [
+    ['semesterChart', specs.semester],
+    ['countryChart', specs.country],
+    ['courseChart', specs.course],
+    ['universityChart', specs.university],
+    ['typeChart', specs.type]
+  ];
+  for (const [id, spec] of bindings) {
+    const node = document.getElementById(id);
+    if (node && spec) new Chart(node, configFor(spec, id));
+  }
+
+
+  document.querySelectorAll('.multi-select').forEach((wrapper) => {
+    const hidden = wrapper.querySelector('input[type="hidden"]');
+    const trigger = wrapper.querySelector('.multi-trigger');
+    const selectAll = wrapper.querySelector('.multi-all');
+    const items = Array.from(wrapper.querySelectorAll('.multi-item'));
+    const allLabel = wrapper.dataset.allLabel || 'Todos';
+    function syncFromChecks() {
+      const checked = items.filter((i) => i.checked);
+      const allChecked = items.length > 0 && checked.length === items.length;
+      selectAll.checked = allChecked;
+      selectAll.indeterminate = checked.length > 0 && !allChecked;
+      if (allChecked) {
+        hidden.value = wrapper.dataset.name === 'direction' ? 'all' : '';
+        trigger.textContent = allLabel;
+      } else if (checked.length === 0) {
+        hidden.value = '__none__';
+        trigger.textContent = 'Nenhum';
+      } else {
+        hidden.value = checked.map((i) => i.value).join(',');
+        trigger.textContent = checked.length === 1
+          ? (checked[0].dataset.label || checked[0].value)
+          : checked.length + ' selecionados';
+      }
+    }
+
+    trigger.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      document.querySelectorAll('.multi-select.open').forEach((other) => { if (other !== wrapper) other.classList.remove('open'); });
+      wrapper.classList.toggle('open');
+    });
+
+    selectAll.addEventListener('change', () => {
+      const shouldCheck = selectAll.checked;
+      items.forEach((i) => { i.checked = shouldCheck; });
+      syncFromChecks();
+    });
+
+    items.forEach((item) => item.addEventListener('change', () => {
+      syncFromChecks();
+    }));
+
+    syncFromChecks();
+  });
+
+  document.addEventListener('click', (ev) => {
+    if (!ev.target.closest('.multi-select')) {
+      document.querySelectorAll('.multi-select.open').forEach((wrapper) => wrapper.classList.remove('open'));
+    }
+  });
+})();
+</script>
+<script>
+(()=>{
+  const panel=document.getElementById('dari-agreements-panel');
+  if(!panel)return;
+  const form=panel.querySelector('#ag-dashboard-filters');
+  const summary=panel.querySelector('#ag-dashboard-summary');
+  const chartNode=document.getElementById('agreementChart');
+  const chartHeading=panel.querySelector('#agdb-chart-heading');
+  const chartDescription=panel.querySelector('#agdb-chart-description');
+  // Consulta normal agrupa por país; atalho de andamento agrupa pelas etapas.
+  const mapping={a_type:'types',a_status:'status',a_university:'universities',a_country:'countries'};
+  let controlsReady=false;
+  let inProgressOnly=false;
+  let expiringOnly=false;
+  const inProgressButton=panel.querySelector('#agdb-only-progress');
+  const expiringButton=panel.querySelector('#agdb-expiring-180');
+  const chartWrap=panel.querySelector('#agdb-chart-wrap');
+  const expiringResults=panel.querySelector('#agdb-expiring-results');
+  const expiringBody=panel.querySelector('#agdb-expiring-body');
+  const expiringDates=panel.querySelector('#agdb-expiring-dates');
+  function setMode(mode){
+    inProgressOnly=mode==='progress';expiringOnly=mode==='expiring';
+    [[inProgressButton,inProgressOnly],[expiringButton,expiringOnly]].forEach(([button,active])=>{
+      button.setAttribute('aria-pressed',String(active));
+      button.classList.toggle('primary',active);
+      button.classList.toggle('secondary',!active);
+    });
+  }
+  function closeMenus(){
+    panel.querySelectorAll('.agdb-multi.open').forEach(root=>{
+      root.classList.remove('open');
+      root.querySelector('.agdb-trigger').setAttribute('aria-expanded','false');
+    });
+  }
+  function setupMenus(options){
+    if(controlsReady)return;
+    Object.entries(mapping).forEach(([field,source])=>{
+      const root=panel.querySelector(`.agdb-multi[data-field="${field}"]`);
+      const hidden=root.querySelector('input[type="hidden"]');
+      const button=root.querySelector('.agdb-trigger');
+      const dropdown=root.querySelector('.agdb-dropdown');
+      const selected=new Set(hidden.value.split(',').filter(Boolean));
+      const allLabel=root.dataset.label;
+      const allOption=document.createElement('label');allOption.className='agdb-choice';
+      const checkAll=document.createElement('input');checkAll.type='checkbox';checkAll.dataset.all='';
+      allOption.append(checkAll,document.createTextNode(' '+allLabel));dropdown.appendChild(allOption);
+      const items=[];
+      (options[source]||[]).forEach(entry=>{
+        const value=typeof entry==='string'?entry:String(entry.id);
+        const title=typeof entry==='string'?entry:entry.name;
+        const item=document.createElement('label');item.className='agdb-choice';
+        const check=document.createElement('input');check.type='checkbox';check.dataset.item='';
+        check.value=value;check.dataset.title=title;
+        check.checked=!hidden.value||selected.has(value);
+        item.append(check,document.createTextNode(' '+title));dropdown.appendChild(item);
+        items.push(check);
+      });
+      function sync(){
+        const checked=items.filter(x=>x.checked);
+        const everyone=items.length>0&&checked.length===items.length;
+        checkAll.checked=everyone;
+        checkAll.indeterminate=checked.length>0&&!everyone;
+        hidden.value=everyone?'':checked.length===0?'__none__':checked.map(x=>x.value).join(',');
+        button.textContent=everyone?allLabel:checked.length===0?'Nenhum':checked.length===1?(checked[0].dataset.title||checked[0].value):checked.length+' selecionados';
+      }
+      button.addEventListener('click',ev=>{
+        ev.preventDefault();const wasOpen=root.classList.contains('open');
+        closeMenus();if(!wasOpen){root.classList.add('open');button.setAttribute('aria-expanded','true');}
+      });
+      checkAll.addEventListener('change',()=>{items.forEach(x=>x.checked=checkAll.checked);sync();});
+      items.forEach(x=>x.addEventListener('change',sync));
+      root.restoreAll=()=>{items.forEach(x=>x.checked=true);sync();};
+      sync();
+    });
+    controlsReady=true;
+  }
+  document.addEventListener('click',ev=>{if(!ev.target.closest('#dari-agreements-panel .agdb-multi'))closeMenus();});
+  const yearInput=form.elements.namedItem('a_year');
+  const currentYear=String(new Date().getFullYear());
+  if(yearInput&&!yearInput.value)yearInput.value=currentYear;
+  function query(){
+    const q=new URLSearchParams(new FormData(form));
+    for(const [key,value] of [...q])if(!value && key!=='a_year')q.delete(key);
+    if(inProgressOnly)q.set('a_in_progress','1');
+    if(expiringOnly)q.set('a_expiring_180','1');
+    return q.toString();
+  }
+  function links(q){panel.querySelectorAll('a[data-ag-link]').forEach(a=>{
+    const url=a.getAttribute('href').split('?')[0];a.href=url+(q?'?'+q:'');
+  });}
+  async function update(){
+    const q=query();links(q);
+    try{
+      const response=await fetch('/acordos/analise/dados'+(q?'?'+q:''),{credentials:'same-origin'});
+      if(!response.ok)throw new Error('Dados indisponíveis');
+      const data=await response.json();setupMenus(data.options||{});
+      const expiring=!data.show_chart;
+      summary.textContent=expiring?`${data.total} acordos com vencimento nos próximos 180 dias`:`${data.total} acordos no recorte · ${data.active} ativos confirmados · ${data.in_progress} em andamento`;
+      const isProgress=data.grouping==='Andamento';
+      chartHeading.textContent=data.chart_title|| (isProgress?'Acordos por andamento':'Acordos');
+      chartDescription.textContent=expiring?'Consulte a relação de acordos por ordem de vencimento.':isProgress?'Negociação, elaboração, tramitação e assinatura.':'Distribuição dos acordos por país.';
+      chartWrap.hidden=expiring;
+      chartWrap.style.display=expiring?'none':'';
+      expiringResults.hidden=!expiring;
+      if(expiring){
+        expiringDates.textContent=`Vencimentos entre ${data.expiry_start} e ${data.expiry_end} (inclusive).`;
+        expiringBody.replaceChildren();
+        for(const item of (data.expiring_agreements||[])){
+          const row=document.createElement('tr');
+          for(const key of ['university','country','type','sei','progress','status','expiry']){
+            const cell=document.createElement('td');cell.textContent=item[key]||'—';row.appendChild(cell);
+          }
+          const cell=document.createElement('td');const link=document.createElement('a');
+          const base=item.detail_url.split('#')[0],hash=item.detail_url.includes('#')?'#'+item.detail_url.split('#')[1]:'';
+          link.href=base+(base.includes('?')?'&':'?')+'retorno='+encodeURIComponent('/acordos/analise?'+q)+hash;
+          link.textContent='Abrir';cell.appendChild(link);row.appendChild(cell);expiringBody.appendChild(row);
+        }
+        if(!expiringBody.children.length){
+          const row=document.createElement('tr'),cell=document.createElement('td');
+          cell.colSpan=8;cell.textContent='Nenhum acordo com vencimento nos próximos 180 dias.';
+          row.appendChild(cell);expiringBody.appendChild(row);
+        }
+      }
+      if(!expiring&&window.Chart&&chartNode){
+        const previous=Chart.getChart(chartNode);if(previous)previous.destroy();
+        const spec=data.chart;
+        chartNode.parentElement.style.height=Math.max(380,(spec.labels||[]).length*36+75)+'px';
+        new Chart(chartNode,{type:'bar',data:{labels:spec.labels,datasets:spec.datasets.map(x=>({...x,backgroundColor:'rgba(71,125,130,.80)',borderRadius:4}))},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{precision:0}},y:{ticks:{autoSkip:false}}}}});
+      }
+    }catch(error){summary.textContent='Não foi possível atualizar os acordos. Abra Visualizar para consultar o relatório.';}
+  }
+  form.addEventListener('submit',event=>{
+    event.preventDefault();setMode('normal');closeMenus();update();
+  });
+  inProgressButton.addEventListener('click',()=>{
+    if(controlsReady)panel.querySelectorAll('.agdb-multi').forEach(root=>root.restoreAll());
+    yearInput.value='';form.elements.namedItem('date_mode').value='vigencia';
+    setMode('progress');closeMenus();update();
+  });
+  expiringButton.addEventListener('click',()=>{
+    if(controlsReady)panel.querySelectorAll('.agdb-multi').forEach(root=>root.restoreAll());
+    yearInput.value='';form.elements.namedItem('date_mode').value='vigencia';
+    setMode('expiring');closeMenus();update();
+  });
+  form.addEventListener('reset',()=>{setMode('normal');setTimeout(()=>{
+    if(controlsReady)panel.querySelectorAll('.agdb-multi').forEach(root=>root.restoreAll());
+    yearInput.value=currentYear;form.elements.namedItem('date_mode').value='assinatura';
+    closeMenus();update();
+  },0);});
+  update();
+})();
+</script>
+
+{% endblock %}
+<!-- DARI_V53_17_UI_PROCESSOS -->

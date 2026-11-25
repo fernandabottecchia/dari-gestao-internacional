@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}DARI • Acordos{% endblock %}
+{% block heading %}<h1>Acordos</h1><p>Gestão de acordos com universidades parceiras, tramitação e próximas ações.</p>{% endblock %}
+{% block content %}
+<style>
+.agreement-cards a.dari-expiring-card{display:block;text-decoration:none;color:inherit;cursor:pointer}
+.agreement-cards a.dari-expiring-card:hover{border-color:#72a6aa;box-shadow:0 4px 15px rgba(20,56,67,.10)}
+.agreement-cards a.dari-expiring-card:focus-visible{outline:3px solid #36747a;outline-offset:3px}
+</style>
+<div class="cards agreement-cards">
+  <div class="card metric"><span>Total</span><strong>{{ total }}</strong><small>acordos registrados no sistema</small></div>
+  <div class="card metric"><span>Ativos</span><strong>{{ active_count }}</strong><small>assinados e vigentes</small></div>
+  <div class="card metric"><span>Em andamento</span><strong>{{ in_progress }}</strong><small>negociação/tramitação/assinatura</small></div>
+  <div class="card metric"><span>Aguardando assinatura</span><strong>{{ waiting_signature }}</strong><small>etapa 4</small></div>
+  <a class="card metric dari-expiring-card" href="/acordos/analise?a_expiring_180=1&amp;a_year=&amp;date_mode=vigencia&amp;origem=acordos" aria-label="Ver acordos que vencem nos próximos 180 dias"><span>Vencem em até 180 dias</span><strong>{{ expiring }}</strong><small>controle de validade</small></a>
+</div>
+<div class="toolbar">
+  <form method="get" class="live-search-form" data-live-search><input name="q" value="{{ q }}" placeholder="Buscar em qualquer coluna..." autocomplete="off" aria-label="Buscar em qualquer coluna"><button>Buscar</button></form>
+  <div class="toolbar-actions"><a class="button" href="/acordos/documentos">Documentos</a>{% if permissions.acordos.edit %}<a class="button primary" href="/acordos/novo">Novo acordo</a>{% else %}<span class="button primary disabled-control" title="Seu usuário possui acesso somente para visualização em Acordos.">Novo acordo</span>{% endif %}</div>
+</div>
+<section class="card table-widget" data-table-widget>
+{% set table_id = "acordos" %}
+{% set table_label = "Acordos" %}
+{% set xlsx_url = "/acordos/cadastro/xlsx?q=" ~ (q|urlencode) %}
+{% include "_table_controls.html" %}
+<table data-column-table="acordos"><thead><tr>
+<th>Universidade</th><th>Sigla</th><th>País</th><th>Tipo do acordo</th><th>Nº SIG+</th><th>Nº SEI</th><th>Andamento</th><th>Etapa atual UFRJ</th><th>Assinatura</th><th>Vigência (anos)</th><th>Validade</th><th>Status</th><th>Coordenador UFRJ</th><th>Próximo passo</th><th>Prazo</th><th>Observações</th><th data-fixed-column="true">Ações</th>
+</tr></thead><tbody>
+{% for a in rows %}
+{% set last = a.actions[-1] if a.actions else None %}
+{% set source_record = source_records.get(a.id) %}
+<tr>
+<td>{{ a.university.name }}</td><td>{{ a.university.acronym or '-' }}</td><td>{{ a.university.country.name if a.university.country else '-' }}</td>
+<td>{{ a.agreement_type }}</td><td>{{ a.sig_number or '-' }}</td><td>{{ a.sei_number or '-' }}</td><td><span class="status stage">{{ a.progress or '-' }}</span></td>
+<td>{{ a.ufrj_stage or '-' }}</td><td>{{ a.signed_date.strftime('%d/%m/%Y') if a.signed_date else '-' }}</td><td>{{ a.validity_years if a.validity_years is not none else '-' }}</td><td>{{ a.expiry_date.strftime('%d/%m/%Y') if a.expiry_date else '-' }}</td><td><span class="status">{{ a.status or '-' }}</span></td>
+<td>{{ a.ufrj_coordinator or '-' }}</td><td class="wrap-cell">{{ last.next_step if last and last.next_step else '-' }}</td><td>{{ last.deadline_text if last and last.deadline_text else '-' }}</td><td class="wrap-cell">{{ a.notes or '-' }}</td><td class="row-actions" data-fixed-column="true"><a href="/acordos/item/{{ a.id }}">Abrir</a>{% if permissions.acordos.edit %}<a href="/acordos/item/{{ a.id }}/editar">Editar</a>{% else %}<span class="action-disabled" title="Sem permissão para editar Acordos.">Editar</span>{% endif %}</td>
+</tr>{% endfor %}
+
+</tbody></table></div></section>
+{% endblock %}

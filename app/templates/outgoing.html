@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}DARI • Outgoing{% endblock %}
+{% block heading %}<h1>{% if processo == 'concluidos' %}Processos concluídos{% else %}Outgoing{% endif %}</h1><p>Mobilidade de estudantes brasileiros para instituições estrangeiras.</p>{% endblock %}
+{% block content %}
+<!-- DARI_V53_16_TABS -->
+<link rel="stylesheet" href="/static/mobility-workflow-v53-16.css?v=53.16">
+{% set area29 = 'outgoing' %}
+{% include '_mobility_filters_v53_29.html' %}
+
+
+<section class="card table-widget" data-table-widget>
+{% set table_id = "outgoing" %}
+{% set table_label = "Estudantes Outgoing" %}
+{% set xlsx_url = '/tabelas/outgoing/xlsx?q=' ~ (q|urlencode) ~ '&periodo=' ~ (periodo|urlencode) ~ '&processo=' ~ processo ~ '&situacao=' ~ situacao %}
+{# DARI_V53_16_XLSX #}
+{% include "_table_controls.html" %}
+<table data-column-table="outgoing-v53-29"><thead><tr>
+<th>Nome</th><th>Status</th><th>DRE</th><th>E-mail</th><th>Curso</th><th>Programa/Projeto</th><th>Coordenador</th><th>Destino</th><th>País de destino</th><th>Semestre</th><th>Duração</th><th>Mobilidade</th><th>Bolsa</th><th>Prorrogação</th><th>Previsão de retorno</th><th data-fixed-column="true">Ações</th>
+</tr></thead><tbody>
+{% for m in rows %}{% set d = m.outgoing_detail %}<tr>
+<td>{{ m.student.full_name }}</td><td>{% for cls,label in status_labels.get(m.id,[]) %}<span class="mobility29-badge {{ cls }}">{{ label }}</span>{% endfor %}{% if m._status_palette34 or not status_labels.get(m.id) %}{% include '_custom_status_v53_34.html' %}{% endif %}</td><td>{{ m.student.dre or '-' }}</td><td>{{ m.student.email or '-' }}</td>
+<td>{{ m.course.name if m.course else '-' }}</td><td>{{ m.program.name if m.program else '-' }}</td><td>{{ m.coordinator.name if m.coordinator else '-' }}</td>
+<td>{{ m.destination_university.name if m.destination_university else '-' }}</td><td>{{ m._outgoing_country38.name if m._outgoing_country38 else '-' }}</td>
+<td>{{ period_labels.get(m.id) or '-' }}</td><td>{{ m.duration_semesters if m.duration_semesters is not none else '-' }}</td><td>{{ m.mobility_type or '-' }}</td>
+<td>{{ m.scholarship or '-' }}</td><td>{{ m.extension or '-' }}</td><td>{{ m._return_label40 or '-' }}</td>
+<td class="row-actions" data-fixed-column="true"><a href="/mobilidade/{{ m.id }}">Abrir</a></td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}

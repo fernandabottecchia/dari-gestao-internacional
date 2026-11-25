@@ -1,0 +1,23 @@
+/* DARI v53.48.4 — Navegação de Incoming/Outgoing e páginas de Candidaturas. */
+.sidebar nav .sidebar-flow{margin:4px 0}
+.sidebar-flow-toggle{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;padding:11px 12px;border-radius:8px;color:#dbe5ed;font-size:14px;font-weight:600;cursor:pointer;user-select:none;transition:background .14s ease}
+.sidebar-flow-toggle::-webkit-details-marker{display:none}
+.sidebar-flow-toggle::marker{content:""}
+.sidebar-flow-toggle:hover,.sidebar-flow-toggle.current{background:var(--nav2);color:#fff}
+.sidebar-flow-toggle:focus-visible{outline:2px solid #a6c5c8;outline-offset:2px}
+.sidebar-flow-chevron{flex:none;width:8px;height:8px;border-right:1.8px solid currentColor;border-bottom:1.8px solid currentColor;transform:rotate(45deg);transition:transform .16s ease;opacity:.75;margin-right:5px;margin-top:-3px}
+.sidebar-flow[open] .sidebar-flow-chevron{transform:rotate(225deg);margin-top:4px}
+.sidebar-flow-submenu{display:grid;gap:2px;padding:3px 0 5px 13px}
+.sidebar nav .sidebar-flow-submenu a{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0;padding:8px 11px;border-radius:7px;font-size:12.5px;color:#c2d0db;text-decoration:none;min-width:0}
+.sidebar nav .sidebar-flow-submenu a:hover,.sidebar nav .sidebar-flow-submenu a.active{background:#ffffff14;color:#fff}
+.sidebar nav .sidebar-flow-submenu a.active{box-shadow:inset 2px 0 0 #92bbc0}
+.sidebar-pending-count{display:inline-flex;justify-content:center;align-items:center;flex:none;min-width:21px;height:19px;padding:0 6px;background:#d5dfe7;border-radius:999px;color:#32475a;font-size:10.5px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.sidebar-flow-submenu a.active .sidebar-pending-count{background:#e8f1f3}
+.dari-candidaturas-settings{display:inline-flex;width:34px;height:34px;align-items:center;justify-content:center;flex:none;border-radius:8px;background:#fff;border:1px solid var(--border);color:#425a66;text-decoration:none;font-size:20px;line-height:1}
+.dari-candidaturas-settings:hover{background:#f0f6f7;color:#275d64;border-color:#bad1d6}
+.dari-candidaturas-settings:focus-visible,.dari-candidaturas-tabs a:focus-visible{outline:2px solid #2e6d74;outline-offset:2px}
+.dari-candidaturas-tabs{display:flex;align-items:center;gap:6px;margin:0 0 17px;padding:0 0 1px;border-bottom:1px solid var(--border)}
+.dari-candidaturas-tabs a{display:inline-block;padding:11px 17px;margin:0;border-radius:8px 8px 0 0;color:#5d6d7a;text-decoration:none;font-size:13px;font-weight:650;border-bottom:2px solid transparent}
+.dari-candidaturas-tabs a:hover{background:#f0f5f6;color:#305f66}
+.dari-candidaturas-tabs a.active{color:#27666e;border-bottom-color:#2e6d74;background:#edf5f5}
+@media(max-width:660px){.dari-candidaturas-tabs a{flex:1;text-align:center}.sidebar-flow-submenu{padding-left:7px}}

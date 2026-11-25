@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}DARI • Configurações{% endblock %}
+{% block heading %}<h1>Configurações</h1><p>Gerenciamento interno do sistema.</p>{% endblock %}
+{% block content %}
+<section class="settings-shell">
+  <aside class="settings-nav card">
+    <div class="settings-nav-head">
+      <h2>Configurações</h2>
+      <p>Escolha uma seção para abrir ao lado.</p>
+    </div>
+    <nav class="settings-menu" aria-label="Menu de configurações">
+      <a class="settings-link {{ 'active' if settings_section=='usuarios' else '' }}" href="/configuracoes?sec=usuarios">Usuários e permissões</a>
+      <a class="settings-link {{ 'active' if settings_section=='calendario' else '' }}" href="/configuracoes?sec=calendario">Calendário Acadêmico</a>
+      <a class="settings-link {{ 'active' if settings_section=='desenvolvimento' else '' }}" href="/configuracoes?sec=desenvolvimento">Desenvolvimento</a>
+    </nav>
+  </aside>
+
+  <section class="settings-panel card">
+    {% if settings_message %}<div class="settings-feedback success">{{ settings_message }}</div>{% endif %}
+    {% if settings_error %}<div class="settings-feedback error">{{ settings_error }}</div>{% endif %}
+
+    {% if settings_section == 'usuarios' %}
+      <div class="settings-panel-head">
+        <span class="settings-kicker">USUÁRIOS E PERMISSÕES</span>
+        <h2>Usuários e permissões</h2>
+        <p>Defina login, senha e permissões por área. A emissão de documentos continua disponível conforme as regras do sistema.</p>
+      </div>
+
+      <div class="users-admin users-admin-top" id="usuarios">
+        {% for u in users %}
+        <article class="user-admin-card">
+          <form method="post" action="/configuracoes/usuarios/{{ u.id }}/salvar" class="user-admin-form">
+            <div class="user-admin-header">
+              <div>
+                <div class="user-admin-title-row">
+                  <h3>{{ u.display_name or u.username }}</h3>
+                  {% if u.is_admin %}<span class="role-badge admin">Diretor • Administrador</span>{% else %}<span class="role-badge">Usuário</span>{% endif %}
+                </div>
+                {% if u.is_admin %}<p>A conta de administrador sempre possui acesso total ao sistema.</p>{% else %}<p>Edite o login, redefina a senha ou ajuste o acesso às áreas do sistema.</p>{% endif %}
+              </div>
+            </div>
+
+            <div class="user-credentials-grid">
+              <label>Usuário
+                <input type="text" name="username" value="{{ u.username }}" required autocomplete="off">
+              </label>
+              <label>Nova senha
+                <input type="password" name="new_password" value="" placeholder="Deixe em branco para manter" autocomplete="new-password">
+              </label>
+            </div>
+
+            <div class="permission-matrix-wrap">
+              <table class="permission-matrix">
+                <thead><tr><th>Área</th><th>Visualizar</th><th>Editar</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>Visão geral</td>
+                    <td><label class="permission-check"><input type="checkbox" name="view_dashboard" value="1" {% if u.is_admin or u.can_view_dashboard %}checked{% endif %} {% if u.is_admin %}disabled{% endif %}><span></span></label></td>
+                    <td><span class="permission-na">—</span></td>
+                  </tr>
+                  <tr>
+                    <td>Incoming</td>
+                    <td><label class="permission-check"><input type="checkbox" name="view_incoming" value="1" {% if u.is_admin or u.can_view_incoming %}checked{% endif %} {% if u.is_admin %}disabled{% endif %}><span></span></label></td>
+                    <td><label class="permission-check"><input type="checkbox" name="edit_incoming" value="1" {% if u.is_admin or u.can_edit_incoming %}checked{% endif %} {% if u.is_admin %}disabled{% endif %}><span></span></label></td>
+                  </tr>
+                  <tr>
+                    <td>Outgoing</td>
+                    <td><label class="permission-check"><input type="checkbox" name="view_outgoing" value="1" {% if u.is_admin or u.can_view_outgoing %}checked{% endif %} {% if u.is_admin %}disabled{% endif %}><span></span></label></td>
+                    <td><label class="permission-check"><input type="checkbox" name="edit_outgoing" value="1" {% if u.is_admin or u.can_edit_outgoing %}checked{% endif %} {% if u.is_admin %}disabled{% endif %}><span></span></label></td>
+                  </tr>
+                  <tr>
+                    <td>Acordos</td>
+                    <td><label class="permission-check"><input type="checkbox" name="view_acordos" value="1" {% if u.is_admin or u.can_view_acordos %}checked{% endif %} {% if u.is_admin %}disabled{% endif %}><span></span></label></td>
+                    <td><label class="permission-check"><input type="checkbox" name="edit_acordos" value="1" {% if u.is_admin or u.can_edit_acordos %}checked{% endif %} {% if u.is_admin %}disabled{% endif %}><span></span></label></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="user-admin-actions">
+              <button class="button primary" type="submit">Salvar alterações</button>
+            </div>
+          </form>
+          {% if not u.is_admin %}
+          <form method="post" action="/configuracoes/usuarios/{{ u.id }}/excluir" class="user-delete-form" onsubmit="return confirm('Excluir o usuário {{ u.username }}?');">
+            <button class="button danger" type="submit">Excluir usuário</button>
+          </form>
+          {% else %}
+          <div class="user-delete-form"><button class="button disabled" type="button" disabled title="A conta do administrador não pode ser excluída.">Excluir usuário</button></div>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+
+    {% elif settings_section == 'calendario' %}
+      <div class="settings-panel-head">
+        <span class="settings-kicker">CALENDÁRIO ACADÊMICO</span>
+        <h2>Períodos da UFRJ</h2>
+      </div>
+
+      <section class="calendar-admin" id="calendario" aria-labelledby="calendar-title">
+        <div class="calendar-admin-head compact">
+          <div>
+            <h2 id="calendar-title">Calendário Acadêmico</h2>
+          </div>
+          {% if academic_current %}<span class="calendar-active-label">Atual: {{ academic_current.semester }}</span>{% else %}<span class="calendar-pending-label">Sem período atual definido</span>{% endif %}
+        </div>
+
+        <form method="post" action="/configuracoes/calendario/salvar" class="calendar-form" id="calendar-form-main">
+          <label>Semestre (AAAA/S)
+            <input id="calendar-semester" name="semester" required pattern="20[0-9]{2}/[12]" maxlength="6" placeholder="2026/2" value="{{ academic_current.semester if academic_current else '' }}">
+          </label>
+          <label>Início do semestre
+            <input id="calendar-start-date" type="date" name="start_date" required value="{{ academic_current.start_date if academic_current else '' }}">
+          </label>
+          <label>Término do semestre
+            <input id="calendar-end-date" type="date" name="end_date" required value="{{ academic_current.end_date if academic_current else '' }}">
+          </label>
+          <div class="calendar-form-actions">
+            <label class="calendar-current-check"><input id="calendar-is-current" type="checkbox" name="is_current" value="1" checked> Definir como semestre atual</label>
+            <div class="calendar-action-buttons">
+              <button type="submit" class="button primary">Salvar</button>
+              <button type="button" class="button" id="calendar-cancel-edit" hidden>Cancelar edição</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="calendar-list-head simple"><h3>Semestres cadastrados</h3></div>
+        {% if academic_terms %}
+        <div class="calendar-table-wrap"><table class="calendar-table"><thead><tr><th>Semestre</th><th>Início</th><th>Término</th><th>Situação</th><th>Ações</th></tr></thead><tbody>
+          {% for term in academic_terms %}
+            <tr>
+              <td><strong>{{ term.semester }}</strong></td>
+              <td>{{ term.start_date[8:10] }}/{{ term.start_date[5:7] }}/{{ term.start_date[:4] }}</td>
+              <td>{{ term.end_date[8:10] }}/{{ term.end_date[5:7] }}/{{ term.end_date[:4] }}</td>
+              <td>{{ 'Semestre atual' if term.is_current else 'Cadastrado' }}</td>
+              <td>
+                <div class="calendar-row-actions">
+                  <button
+                    type="button"
+                    class="button compact"
+                    data-edit-semester="{{ term.semester }}"
+                    data-edit-start="{{ term.start_date }}"
+                    data-edit-end="{{ term.end_date }}"
+                    data-edit-current="{{ 1 if term.is_current else 0 }}"
+                  >Editar</button>
+                  {% if not term.is_current %}
+                  <form method="post" action="/configuracoes/calendario/salvar" class="calendar-inline-form">
+                    <input type="hidden" name="semester" value="{{ term.semester }}">
+                    <input type="hidden" name="start_date" value="{{ term.start_date }}">
+                    <input type="hidden" name="end_date" value="{{ term.end_date }}">
+                    <input type="hidden" name="is_current" value="1">
+                    <button type="submit" class="button compact">Definir como semestre atual</button>
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody></table></div>
+        {% else %}<p class="calendar-empty-state">Nenhum semestre configurado no sistema.</p>{% endif %}
+      </section>
+
+      <script>
+      (function() {
+        const form = document.getElementById('calendar-form-main');
+        if (!form) return;
+        const semester = document.getElementById('calendar-semester');
+        const start = document.getElementById('calendar-start-date');
+        const end = document.getElementById('calendar-end-date');
+        const isCurrent = document.getElementById('calendar-is-current');
+        const cancel = document.getElementById('calendar-cancel-edit');
+        const initial = {
+          semester: semester.value,
+          start: start.value,
+          end: end.value,
+          current: isCurrent.checked
+        };
+        function restoreInitial() {
+          semester.value = initial.semester || '';
+          start.value = initial.start || '';
+          end.value = initial.end || '';
+          isCurrent.checked = initial.current;
+          cancel.hidden = true;
+        }
+        document.querySelectorAll('[data-edit-semester]').forEach(function(button) {
+          button.addEventListener('click', function() {
+            semester.value = button.getAttribute('data-edit-semester') || '';
+            start.value = button.getAttribute('data-edit-start') || '';
+            end.value = button.getAttribute('data-edit-end') || '';
+            isCurrent.checked = button.getAttribute('data-edit-current') === '1';
+            cancel.hidden = false;
+            form.scrollIntoView({behavior: 'smooth', block: 'start'});
+          });
+        });
+        cancel.addEventListener('click', restoreInitial);
+      })();
+      </script>
+
+    {% elif settings_section == 'desenvolvimento' %}
+      {% include 'settings_development.html' %}
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

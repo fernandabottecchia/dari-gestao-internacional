@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}DARI • Editar Incoming{% endblock %}
+{% block heading %}<h1>Editar registro Incoming</h1>{% endblock %}
+{% block content %}
+<form class="card form-grid" method="post">
+<input type="hidden" name="csrf" value="{{ csrf }}">
+{% for k,v in fields.items() %}{% if v is not mapping and v is not sequence or v is string or v is none or v is number %}
+<label>{{ k|replace('_',' ')|capitalize }}<input name="field_{{ k }}" value="{{ v if v is not none else '' }}"></label>
+{% endif %}{% endfor %}
+<div class="form-actions"><a class="button" href="/incoming/planilha/linha/{{ row.id }}">Cancelar</a><button class="primary">Salvar</button></div>
+</form>
+{% endblock %}

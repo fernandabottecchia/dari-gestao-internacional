@@ -1,0 +1,34 @@
+/* DARI v53.48.11: acoes de edicao no final das fichas de mobilidade. */
+.dari-mobility-edit-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin: 18px 0 28px;
+}
+.dari-mobility-edit-actions-left,
+.dari-mobility-edit-actions-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.dari-mobility-edit-actions-right form { margin: 0; }
+.dari-mobility-delete-btn {
+  color: #b42332 !important;
+  background: transparent !important;
+  border: 1px solid #e4a4ab !important;
+  box-shadow: none !important;
+}
+.dari-mobility-delete-btn:hover,
+.dari-mobility-delete-btn:focus-visible {
+  background: #fff1f1 !important;
+  border-color: #d6707c !important;
+}
+@media(max-width: 620px) {
+  .dari-mobility-edit-actions { align-items: stretch; }
+  .dari-mobility-edit-actions-left,
+  .dari-mobility-edit-actions-right { width: 100%; }
+  .dari-mobility-edit-actions-right { justify-content: flex-end; }
+}

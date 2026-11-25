@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}DARI • {{ a.university.name }}{% endblock %}
+{% block heading %}<h1>{{ a.university.name }}</h1><p>{% if archived_sheet_expired %}Ficha da universidade{% else %}{{ a.agreement_type }} • ficha do acordo{% endif %}</p>{% endblock %}
+{% block content %}
+{% if source_error %}<div class="doc-feedback error">Este acordo está sendo gerenciado pela planilha Controle_Acordos_DARI durante a fase de transição. Os campos principais do acordo continuam na planilha; o acompanhamento interno pode ser atualizado aqui no sistema.</div>{% endif %}
+{% set action_error = request.query_params.get('erro') %}
+{% if action_error == 'servidor_central_indisponivel' %}
+<div class="doc-feedback error">Servidor central indisponível. A consulta local continua funcionando, mas nenhuma edição foi salva. Edições exigem conexão com o servidor central.</div>
+{% elif action_error == 'servidor_central_erro' %}
+<div class="doc-feedback error">O servidor central recusou a alteração. Nenhuma edição local foi aplicada.</div>
+{% elif action_error == 'acao_externa_somente_leitura' %}
+<div class="doc-feedback error">Este item veio da planilha oficial e permanece somente leitura durante a fase de transição.</div>
+{% elif action_error == 'acao_local_nao_migrada' %}
+<div class="doc-feedback error">Este item é um registro local antigo e ainda não está vinculado ao servidor central. Migre-o antes de editar.</div>
+{% elif action_error == 'sem_vinculo_central' %}
+<div class="doc-feedback error">Este acordo não possui vínculo de rastreabilidade com o servidor central.</div>
+{% endif %}
+{% set retorno = request.query_params.get('retorno', '') %}
+{% set destino_voltar = retorno if retorno == '/acordos/analise' or retorno.startswith('/acordos/analise?') else '/acordos' %}
+<div class="toolbar detail-toolbar">
+  <div class="toolbar-actions-left"><a class="button" href="{{ destino_voltar }}">← Voltar</a></div>
+  <div class="toolbar-actions">
+    {% if permissions.acordos.edit %}<a class="button primary" href="/acordos/item/{{ a.id }}/editar">Editar acordo</a>{% else %}<span class="button primary disabled-control" title="Seu usuário possui acesso somente para visualização em Acordos.">Editar acordo</span>{% endif %}
+  </div>
+</div>
+<div class="detail-grid">
+{% if archived_sheet_expired %}
+  <section class="card detail-card"><h2>Instituição</h2><dl>
+    <dt>Universidade</dt><dd>{{ a.university.name }}</dd>
+    <dt>Sigla</dt><dd>{{ a.university.acronym or '-' }}</dd>
+    <dt>País</dt><dd>{{ a.university.country.name if a.university.country else '-' }}</dd></dl></section>
+  <section class="card detail-card"><h2>Identificação do acordo</h2><dl>
+    <dt>Tipo</dt><dd>—</dd><dt>SIG+</dt><dd>—</dd><dt>SEI</dt><dd>—</dd>
+    <dt>Coordenador UFRJ</dt><dd>—</dd></dl></section>
+  <section class="card detail-card"><h2>Tramitação</h2><dl>
+    <dt>Andamento</dt><dd>—</dd><dt>Etapa atual UFRJ</dt><dd>—</dd>
+    <dt>Status</dt><dd>—</dd><dt>Observações</dt><dd>—</dd></dl></section>
+  <section class="card detail-card"><h2>Vigência</h2><dl>
+    <dt>Assinatura</dt><dd>—</dd><dt>Vigência</dt><dd>—</dd><dt>Validade</dt><dd>—</dd></dl></section>
+  <section class="card span-detail" style="grid-column:1/-1"><p class="muted" style="margin:0">
+    O acordo anterior venceu e foi transferido para o Histórico de acordos da universidade, abaixo.
+    Seu processo e todos os campos originais continuam preservados no banco de dados.</p></section>
+{% else %}
+
+<section class="card detail-card"><h2>Instituição</h2><dl><dt>Universidade</dt><dd>{{ a.university.name }}</dd><dt>Sigla</dt><dd>{{ a.university.acronym or '-' }}</dd><dt>País</dt><dd>{{ a.university.country.name if a.university.country else '-' }}</dd></dl></section>
+<section class="card detail-card"><h2>Identificação do acordo</h2><dl><dt>Tipo</dt><dd>{{ a.agreement_type }}</dd><dt>SIG+</dt><dd>{{ a.sig_number or '-' }}</dd><dt>SEI</dt><dd>{{ a.sei_number or '-' }}</dd><dt>Coordenador UFRJ</dt><dd>{{ a.ufrj_coordinator or '-' }}</dd></dl></section>
+<section class="card detail-card"><h2>Tramitação</h2><dl><dt>Andamento</dt><dd><span class="status">{{ a.progress or '-' }}</span></dd><dt>Etapa atual UFRJ</dt><dd>{{ a.ufrj_stage or '-' }}</dd><dt>Status</dt><dd>{{ a.status or '-' }}</dd><dt>Observações</dt><dd class="wrap-value">{{ a.notes or '-' }}</dd></dl></section>
+<section class="card detail-card"><h2>Vigência</h2><dl><dt>Assinatura</dt><dd>{{ a.signed_date.strftime('%d/%m/%Y') if a.signed_date else '-' }}</dd><dt>Vigência</dt><dd>{{ (a.validity_years|string) + ' anos' if a.validity_years else '-' }}</dd><dt>Validade</dt><dd>{{ a.expiry_date.strftime('%d/%m/%Y') if a.expiry_date else '-' }}</dd></dl></section>
+{% include '_agreement_actions_v53_45.html' %}
+</div>
+{% endif %}
+{% include '_agreement_history_v53_45.html' %}
+{% endblock %}
+<!-- DARI_V53_19_AUTO_ARCHIVE -->

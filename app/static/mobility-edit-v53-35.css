@@ -1,0 +1,4 @@
+.mobility-edit35 .detail-card{min-width:0}.mobility-edit35 h2{margin-top:0}.mobility-edit35 .form-grid{align-items:start}.mobility-edit35 .span-2{grid-column:1/-1}.mobility-edit35 label{display:block;min-width:0}.mobility-edit35 input:not([type=checkbox]):not([type=radio]),.mobility-edit35 select,.mobility-edit35 textarea{width:100%;box-sizing:border-box}.mobility-edit35 #custom-status-fields[hidden]{display:none}.mobility-edit35 fieldset{min-width:0}.mobility-edit35 .form-actions{margin:18px 0}.mobility-edit35 textarea{margin-top:6px}@media(max-width:1100px){.mobility-edit35 .form-grid{grid-template-columns:1fr}}
+.mobility-edit35 .detail-grid{grid-template-columns:minmax(0,1fr)}
+.mobility-edit35 #period-feedback41:empty{display:none}
+.mobility-edit35 .period-note44{margin: -8px 0 0;font-size:14px}

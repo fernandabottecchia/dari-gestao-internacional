@@ -1,0 +1,45 @@
+<section class="card" style="margin:18px 0;padding:20px" id="agreement-university-history">
+  <h2>Histórico de acordos da universidade</h2>
+{% if archived_sheet_history %}
+  <div style="overflow-x:auto; margin-bottom:16px">
+    <table style="width:100%;border-collapse:collapse;text-align:left">
+      <thead><tr><th>Processo (SEI)</th><th>Tipo de acordo</th><th>SIG+</th>
+        <th>Assinatura</th><th>Validade</th><th>Status</th><th>Detalhes</th></tr></thead>
+      <tbody>
+      {% for r in archived_sheet_history %}
+        <tr>
+          <td>{{ r.process }}</td><td>{{ r.type }}</td><td>{{ r.sig }}</td>
+          <td>{{ r.begin }}</td><td>{{ r.end }}</td><td>Vencido</td>
+          <td><details><summary style="cursor:pointer;color:var(--accent)">Ver dados</summary>
+            <div style="min-width:240px;max-width:420px;white-space:normal;padding:10px 0;line-height:1.7;font-size:12px">
+              <div><b>Origem:</b> Planilha de acordos</div>
+              <div><b>Andamento:</b> {{ r.progress }}</div>
+              <div><b>Etapa UFRJ:</b> {{ r.stage }}</div>
+              <div><b>Vigência:</b> {{ r.validity_years }} anos</div>
+              <div><b>Coordenador:</b> {{ r.coordinator }}</div>
+              <div style="overflow-wrap:anywhere"><b>Observações:</b> {{ r.notes }}</div>
+              <div><b>Arquivado em:</b> {{ r.archived_on }}</div>
+              <a href="{{ r.detail_url }}">Abrir ficha arquivada</a>
+            </div>
+          </details></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+
+  <div id="university-history-list"><p>Carregando registros vinculados à universidade...</p></div>
+</section>
+<script>
+(()=>{const holder=document.getElementById('university-history-list');if(!holder)return;
+  fetch('/acordos/item/{{ a.id }}/historico',{credentials:'same-origin'}).then(r=>{if(!r.ok)throw new Error();return r.json()}).then(data=>{
+    const rows=data.history||[];holder.replaceChildren();
+    if(!rows.length){holder.textContent='Nenhum registro anterior localizado para esta instituição.';return;}
+    const table=document.createElement('table');table.style.width='100%';table.style.textAlign='left';
+    const th=document.createElement('tr');['Processo','Tipo de acordo','Assinatura','Fim registrado','Status de vigência'].forEach(s=>{const cell=document.createElement('th');cell.textContent=s;th.appendChild(cell)});
+    const thead=document.createElement('thead');thead.appendChild(th);table.appendChild(thead);
+    const body=document.createElement('tbody');rows.forEach(row=>{const tr=document.createElement('tr');[row.process,row.type,row.begin,row.end,row.status].forEach(s=>{const td=document.createElement('td');td.textContent=s;td.style.padding='10px';tr.appendChild(td)});body.appendChild(tr)});table.appendChild(body);holder.appendChild(table);
+  }).catch(()=>{holder.textContent='Histórico temporariamente indisponível.'});
+})();
+</script>

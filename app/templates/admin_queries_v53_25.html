@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}DARI — {{ title }}{% endblock %}
+{% block heading %}<h1>{{ title }}</h1><p>{{ description }}</p>{% endblock %}
+{% block content %}
+<style>
+.admin-query{padding:1.2rem 1.4rem;margin-bottom:1rem}.admin-filters{display:flex;flex-wrap:wrap;gap:1rem;align-items:end;margin:1rem 0}.admin-field{display:flex;flex-direction:column;gap:.35rem;min-width:180px}.admin-field input,.admin-field select{padding:.6rem;border:1px solid #dce3e6;border-radius:8px;background:#fff}.admin-table{overflow:auto}.admin-table table{width:100%;min-width:800px}.admin-table th,.admin-table td{text-align:left;padding:.7rem;border-bottom:1px solid #e5eaf0}.admin-actions{display:flex;gap:1rem;flex-wrap:wrap;align-items:center}.admin-pages{display:flex;justify-content:center;gap:1rem;align-items:center;margin:1rem 0}
+</style>
+<section class="card admin-query">
+<a class="button secondary" href="/#consultas-administrativas">← Voltar à Visão Geral</a>
+<form method="get" class="admin-filters">
+{% if slug in ('previsao-retorno-estudantes','alunos-ativos') %}
+<div class="admin-field"><label for="fluxo">Fluxo</label><select id="fluxo" name="fluxo"><option value="">Todos</option><option value="incoming" {% if fluxo=='incoming' %}selected{% endif %}>Incoming</option><option value="outgoing" {% if fluxo=='outgoing' %}selected{% endif %}>Outgoing</option></select></div>
+{% endif %}
+{% if slug == 'previsao-retorno-estudantes' %}
+<div class="admin-field"><label for="periodo">Período do retorno</label><select id="periodo" name="periodo"><option value="">Todos os períodos</option>{% for p in periods %}<option value="{{ p }}" {% if periodo==p %}selected{% endif %}>{{ p }}</option>{% endfor %}</select></div>
+{% endif %}
+<div class="admin-field" style="flex:1"><label for="busca">Pesquisar</label><input id="busca" name="busca" value="{{ busca }}" placeholder="{% if slug=='projetos' %}Nome ou código do projeto{% elif slug in ('previsao-retorno-estudantes','alunos-ativos') %}Nome, DRE ou universidade{% else %}Nome, sigla, país ou contato{% endif %}"></div>
+{% if slug in ('projetos','deadline-parceiras') %}<label><input type="checkbox" name="ativos" value="1" {% if ativos=='1' %}checked{% endif %}> {{ 'Projetos ativos' if slug=='projetos' else 'Mostrar ativos' }}</label>{% endif %}
+<button class="button primary" type="submit">Filtrar</button><a class="button secondary" href="/consultas-administrativas/{{ slug }}">Limpar</a>
+</form>
+
+<div class="admin-actions"><strong>{{ total }} {% if slug=='projetos' %}projetos/programas{% elif slug in ('previsao-retorno-estudantes','alunos-ativos') %}mobilidades{% else %}registros{% endif %}</strong><a class="button secondary" href="?{{ query }}&amp;formato=csv">Exportar resultado completo em CSV</a></div>
+</section>
+<section class="card admin-query admin-table"><table><thead><tr>{% for key,label in columns %}<th scope="col">{{ label }}</th>{% endfor %}<th scope="col">Ações</th></tr></thead><tbody>
+{% for row in rows %}<tr>{% for key,label in columns %}<td style="white-space:pre-line">{% if key=='links' %}{% for link in row.link_items %}<a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }}</a><br>{% else %}—{% endfor %}{% else %}{{ row.get(key) if row.get(key) not in (none,'') else '—' }}{% endif %}</td>{% endfor %}<td><a class="button secondary" href="{{ row.open_url }}">Abrir</a></td></tr>
+{% else %}<tr><td colspan="{{ columns|length+1 }}">Nenhum registro encontrado para estes filtros.</td></tr>{% endfor %}
+</tbody></table></section>
+{% if pages>1 %}<nav class="admin-pages" aria-label="Paginação">{% if page>1 %}<a class="button secondary" href="?{{ query }}&amp;pagina={{ page-1 }}">← Anterior</a>{% endif %}<span>Página {{ page }} de {{ pages }}</span>{% if page<pages %}<a class="button secondary" href="?{{ query }}&amp;pagina={{ page+1 }}">Próxima →</a>{% endif %}</nav>{% endif %}
+{% endblock %}

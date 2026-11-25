@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}DARI • Editar acordo{% endblock %}
+{% block heading %}<h1>Editar acordo</h1><p>As alterações abaixo são gravadas somente no banco do Sistema DARI. Registros sincronizados de planilhas externas são editados na fonte durante a fase de transição.</p>{% endblock %}
+{% block content %}<style>.edit-stack44{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}.edit-stack44 h2{margin-top:0}</style>
+<form id="agreement-edit46" method="post" class="edit-stack44">
+<section class="card"><h2>Instituição</h2><div class="form-grid">
+<label>Universidade<select name="university_id" required>{% for x in universities %}<option value="{{x.id}}" {{ 'selected' if a.university_id==x.id else '' }}>{{x.name}}</option>{% endfor %}</select></label>
+</div></section><section class="card"><h2>Identificação do acordo</h2><div class="form-grid"><label>Tipo do acordo<select name="agreement_type">{% for opt in agreement_type_options %}<option value="{{ opt }}" {{ 'selected' if a.agreement_type==opt else '' }}>{{ opt }}</option>{% endfor %}</select></label>
+<label>Nº SIG+<input name="sig_number" value="{{ a.sig_number or '' }}"></label><label>Nº SEI<input name="sei_number" value="{{ a.sei_number or '' }}"></label>
+<label>Coordenador UFRJ<input name="ufrj_coordinator" value="{{ a.ufrj_coordinator or '' }}"></label></div></section><section class="card"><h2>Tramitação</h2><div class="form-grid"><label>Andamento<select name="progress">{% for opt in progress_options %}<option value="{{ opt }}" {{ 'selected' if a.progress==opt else '' }}>{{ opt }}</option>{% endfor %}</select></label>
+<label>Etapa atual UFRJ<input name="ufrj_stage" maxlength="120" value="{{ a.ufrj_stage or '' }}" placeholder="Digite a etapa atual"></label>
+<label>Status<input name="status" value="{{ a.status or '' }}"></label>
+<label class="span-2">Observações do acordo<textarea name="notes" rows="4">{{ a.notes or '' }}</textarea></label>
+</div></section><section class="card"><h2>Vigência</h2><div class="form-grid"><label>Data de assinatura<input type="date" name="signed_date" value="{{ a.signed_date.isoformat() if a.signed_date else '' }}"></label><label>Vigência (anos)<input type="number" min="1" max="20" name="validity_years" value="{{ a.validity_years or '' }}"></label>
+<label>Data de validade<input type="date" name="expiry_date" value="{{ a.expiry_date.isoformat() if a.expiry_date else '' }}"></label></div></section><section class="card"><h2>Documentos</h2><div class="form-grid"><label>Link da pasta no Drive<input name="drive_folder_url" value="{{ a.drive_folder_url or '' }}" placeholder="https://drive.google.com/..."></label></div></section></form>
+<div class="edit-stack44" style="margin-top:16px">{% include '_agreement_actions_v53_45.html' %}</div>
+{% include '_agreement_history_v53_45.html' %}
+<div class="form-actions" style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center"><a class="button" href="/acordos/item/{{ a.id }}">Cancelar</a><button form="agreement-edit46" class="button primary" type="submit">Salvar alterações</button><form id="agreement-delete46" action="/acordos/item/{{ a.id }}/excluir" method="post" style="margin-left:auto" onsubmit="return confirm('Excluir este acordo da lista operacional? O histórico será preservado.');"><input type="hidden" name="csrf" value="{{ agreement_csrf46 }}"><button type="submit" class="button danger">Excluir</button></form></div>
+{% endblock %}

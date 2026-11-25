@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}DARI • Ficha da candidatura{% endblock %}
+{% block heading %}<h1>{{ application48.record.full_name or 'Ficha da candidatura' }}</h1><p>{{ 'Incoming' if active == 'incoming' else 'Outgoing' }} • candidatura recebida</p>{% endblock %}
+{% block content %}
+{% set a = application48.record %}
+
+<div class="toolbar"><a class="button secondary" href="/candidaturas/{{ active }}/{{ 'rejeitadas' if a.status == 'rejected' else 'pendentes' }}">← Voltar</a></div>
+<link rel="stylesheet" href="/static/mobility-edit-v53-35.css?v=53.44">
+<link rel="stylesheet" href="/static/application-detail-v53-48-14.css?v=53.48.14">
+{% if application48.form_response %}
+<section class="card dari-candidate-answers-card">
+  <div class="dari-candidate-card-heading">
+    <div>
+      <h2>{{application48.form_response.source.name}}</h2>
+      <p>{% if a.submitted_at %}Recebida em {{a.submitted_at.strftime('%d/%m/%Y %H:%M')}}{% endif %}{% if application48.form_response.response.source_tab %} · Aba: {{application48.form_response.response.source_tab}}{% endif %}</p>
+    </div>
+  </div>
+  {% if form_fields48 %}
+  <dl class="dari-candidate-answers-grid">
+    {% for key,value in form_fields48 %}
+    <div class="dari-candidate-answer {% if (key|length > 75 or value|length > 170) %}dari-candidate-answer-wide{% endif %}">
+      <dt>{{key}}</dt>
+      <dd>{{value if value else '—'}}</dd>
+    </div>
+    {% endfor %}
+  </dl>
+  {% else %}<p class="dari-candidate-empty">Não há respostas detalhadas disponíveis.</p>{% endif %}
+  {% if application48.form_response.files %}
+  <div class="dari-candidate-file-area">
+    <h3>Arquivos enviados</h3>
+    {% for f in application48.form_response.files %}
+    <div class="dari-candidate-file-row">
+      <span>{{f.name}}</span>
+      {% if f.sha256 %}
+        <a class="button secondary" href="/candidaturas/respostas/{{application48.form_response.response.id}}/anexos/{{f.id}}">Baixar</a>
+      {% else %}
+        <span class="dari-candidate-file-unavailable">Arquivo ainda não disponível no SQLite</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% elif a.status == 'pending' %}
+<form id="dari-approve-application" method="post" action="/candidaturas/{{a.id}}/aprovar" class="mobility-edit35">
+  <div class="detail-grid">
+    <section class="card detail-card"><h2>Estudante</h2><div class="form-grid">
+      <label>Nome completo<input name="name" value="{{ draft48.name }}" maxlength="220" required></label>
+      <label>E-mail<input type="email" name="email" value="{{ draft48.email }}" maxlength="180"></label>
+      <label>DRE<input name="dre" value="{{ draft48.dre }}" maxlength="30"></label>
+      <label>Passaporte<input name="passport" value="{{ draft48.passport }}" maxlength="60"></label>
+      {% if active=='incoming' %}
+        <label>País de origem / nacionalidade
+          <select name="nationality" required>
+            <option value="">Selecione o país</option>
+            {% for country in countries48 %}<option value="{{country.name}}" {% if draft48.country==country.name %}selected{% endif %}>{{country.name}}</option>{% endfor %}
+          </select>
+          {% if draft48.country_original and not draft48.country %}<small>Resposta original: {{draft48.country_original}} — selecione a equivalência correta.</small>{% endif %}
+        </label>
+      {% else %}<label>País de origem / nacionalidade<input name="nationality" value="{{ draft48.country_original }}" maxlength="120"></label>{% endif %}
+    </div></section>
+    <section class="card detail-card"><h2>Mobilidade</h2><div class="form-grid">
+      <label>Curso<select name="course_id"><option value="0">Não informado</option>{% for x in courses %}<option value="{{x.id}}" {% if draft48.course_id==x.id %}selected{% endif %}>{{x.name}}</option>{% endfor %}</select></label>
+      <label>Programa/Projeto<select name="program_id"><option value="0">Não informado</option>{% for x in programs %}<option value="{{x.id}}">{{x.name}}</option>{% endfor %}</select></label>
+      <label>Coordenador<select name="coordinator_id"><option value="0">Não informado</option>{% for x in coordinators %}<option value="{{x.id}}">{{x.name}}</option>{% endfor %}</select></label>
+      {% if active=='incoming' %}
+      <label>Start date (MM/AAAA)<input id="form-start-month48" name="start_date_form" value="{{draft48.start_date_form}}" placeholder="Ex. 03/2027" pattern="(0?[1-9]|1[0-2])[/.-]20[0-9]{2}"></label>
+      {% endif %}
+      <label>Semestre<input id="form-semester48" name="semester_label" value="{{draft48.semester_label}}" pattern="20[0-9]{2}/[12]" maxlength="6" placeholder="Ex. 2029/2"></label>
+      {% if active=='incoming' %}
+      <label>Tipo de mobilidade<select name="mobility_type">
+        {% if draft48.mobility_type %}<option value="{{draft48.mobility_type}}" selected>{{draft48.mobility_type}}</option>{% else %}<option value="">Selecione</option>{% endif %}
+        {% for option in mobility_options48 %}{% if option != draft48.mobility_type %}<option value="{{option}}">{{option}}</option>{% endif %}{% endfor %}
+      </select></label>
+      {% else %}<label>Tipo de mobilidade<input name="mobility_type" value="{{draft48.mobility_type}}" maxlength="100"></label>{% endif %}
+      <label>Duração (semestres)<input name="duration_semesters" type="number" min="1" max="100" value="{{ draft48.duration_semesters if draft48.duration_semesters is not none else '' }}"></label>
+      <label>Status<input value="Candidatura aprovada" disabled title="Definido ao incluir a candidatura no banco"></label>
+    </div></section>
+    <section class="card detail-card"><h2>{{ 'Instituição de origem' if active == 'incoming' else 'Destino' }}</h2><div class="form-grid">
+      <label>{{ 'Universidade de origem' if active == 'incoming' else 'Universidade de destino' }}
+        <select name="university_id"><option value="0">Não informado</option>{% for x in universities %}<option value="{{x.id}}" {% if draft48.university_id==x.id %}selected{% endif %}>{{x.name}}</option>{% endfor %}</select>
+      </label>
+    </div></section>
+    <section class="card detail-card"><h2>{{ 'Acompanhamento Incoming' if active=='incoming' else 'Acompanhamento Outgoing' }}</h2><div class="form-grid">
+      {% if active == 'incoming' %}
+        <label class="span-2">Documento de candidatura<input name="candidate_document" value="{{ draft48.candidate_document }}"></label>
+        <label>Polimail<input name="polimail" value="{{draft48.polimail}}"></label>
+        <label>Acesso intranet<input name="intranet_access" value="{{draft48.intranet_access}}"></label>
+        <label>Identificação<input name="identification" value="{{draft48.identification}}"></label>
+        <label>Formulário DARI<input name="dari_form" value="{{draft48.dari_form}}"></label>
+        <label>Plano de estudos<input name="study_plan" value="{{draft48.study_plan}}"></label>
+        <label>Responsável<input name="responsible_name" value="{{draft48.responsible_name}}"></label>
+        <label>E-mail responsável<input type="email" name="responsible_email" value="{{draft48.responsible_email}}"></label>
+        <label class="span-2">Observações da coordenação<textarea name="coordination_notes" rows="3">{{draft48.coordination_notes}}</textarea></label>
+      {% else %}
+        <label>Registro<input name="registration_semester" value="{{draft48.registration_semester}}"></label>
+        <label>Prorrogação<input name="extension" value="{{draft48.extension}}"></label>
+        <label>Bolsa<input name="scholarship" value="{{draft48.scholarship}}"></label>
+        <label class="span-2">Observações<textarea name="notes" rows="3">{{draft48.notes}}</textarea></label>
+      {% endif %}
+    </div></section>
+  </div>
+</form>
+{% else %}
+<section class="card"><h2>{{a.full_name or 'Candidatura'}}</h2><p>{{'Rejeitada' if a.status=='rejected' else 'Incluída no banco'}} · {{a.email or '-'}}</p></section>
+{% endif %}
+{% if not application48.form_response %}<section class="card" style="margin:16px 0"><h2>Outras respostas do formulário</h2>
+  {% if extra48 %}
+    <div class="form-grid" style="margin-top:14px">
+    {% for label,value in extra48 %}
+      {% if a.status == 'pending' and not application48.form_response %}
+        <label class="span-2">{{label}}
+          <input type="hidden" name="extra_key" value="{{label}}" form="dari-approve-application">
+          <textarea name="extra_value" form="dari-approve-application" rows="2" style="width:100%;min-height:64px">{{value}}</textarea>
+        </label>
+      {% else %}<div class="span-2"><strong>{{label}}</strong><p style="overflow-wrap:anywhere;white-space:pre-wrap">{{value}}</p></div>{% endif %}
+    {% endfor %}
+    </div>
+  {% else %}<p>Não há respostas adicionais.</p>{% endif %}
+</section>
+{% endif %}
+{% if not application48.form_response and (a.document_url or a.document_local_path) %}
+<section class="card" style="margin:16px 0"><h2>Documentos</h2><a class="button secondary" href="/candidaturas/{{a.id}}/documento" target="_blank" rel="noopener">Abrir documento</a></section>
+{% endif %}
+{% if a.status == 'pending' and application48.form_response %}
+<div class="dari-candidate-actions" role="group" aria-label="Ações da candidatura">
+  <div class="dari-candidate-actions-main">
+    <a href="/novo/{{active}}?form_response={{application48.form_response.response.id}}"
+       class="button primary {% if not permissions[active].edit %}dari-action-disabled{% endif %}"
+       {% if not permissions[active].edit %}aria-disabled="true" tabindex="-1"{% endif %}>Criar nova candidatura</a>
+    <a href="/candidaturas/respostas/{{application48.form_response.response.id}}/vincular"
+       class="button secondary {% if not permissions[active].edit %}dari-action-disabled{% endif %}"
+       {% if not permissions[active].edit %}aria-disabled="true" tabindex="-1"{% endif %}>Adicionar a um processo existente</a>
+  </div>
+  <form method="post" action="/candidaturas/{{a.id}}/rejeitar" class="dari-candidate-delete"
+        onsubmit="return confirm('Excluir esta candidatura das pendentes? Ela permanecerá em Candidaturas rejeitadas e não será reimportada automaticamente.')">
+    <button class="button dari-candidate-delete-button" type="submit"
+      {% if not permissions[active].edit %}disabled{% endif %}>Excluir candidatura</button>
+  </form>
+</div>
+{% elif a.status == 'pending' %}
+<section class="card">
+  <h2>Decisão da candidatura</h2>
+  <div class="dari-candidate-actions">
+    <button form="dari-approve-application" type="submit" class="button primary"
+      {% if not permissions[active].edit %}disabled{% endif %}
+      onclick="return confirm('Incluir esta candidatura antiga no banco?')">Incluir no banco</button>
+    <form method="post" action="/candidaturas/{{a.id}}/rejeitar"
+      onsubmit="return confirm('Excluir a candidatura da triagem? Ela permanecerá em Candidaturas rejeitadas.')">
+      <button type="submit" class="button dari-candidate-delete-button" {% if not permissions[active].edit %}disabled{% endif %}>Excluir candidatura</button>
+    </form>
+  </div>
+</section>
+{% elif a.status == 'rejected' %}
+<section class="card"><form method="post" action="/candidaturas/{{a.id}}/reabrir"
+  onsubmit="return confirm('Reabrir candidatura?')"><button type="submit" class="button secondary" {% if not permissions[active].edit %}disabled{% endif %}>Reabrir candidatura</button></form></section>
+{% elif a.mobility_id %}
+<section class="card"><a class="button secondary" href="/mobilidade/{{a.mobility_id}}">Abrir processo</a></section>
+{% endif %}
+{% if active == 'incoming' and a.status == 'pending' %}
+<script>
+(function () {
+  const periods = {{ calendar48|tojson }};
+  const start = document.getElementById('form-start-month48');
+  const semester = document.getElementById('form-semester48');
+  if (!start || !semester) return;
+  function infer(value) {
+    const match = String(value).trim().match(/^(0?[1-9]|1[0-2])[\/.\-](20\d{2})$/);
+    if (!match) return '';
+    const month = Number(match[1]), year = Number(match[2]);
+    const first = Date.UTC(year, month - 1, 1);
+    const last = Date.UTC(year, month, 0);
+    const possible = [];
+    for (const r of periods) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(r.start_date) || !/^\d{4}-\d{2}-\d{2}$/.test(r.end_date)) continue;
+      const a = Date.parse(r.start_date + 'T00:00:00Z');
+      const z = Date.parse(r.end_date + 'T00:00:00Z');
+      const overlap = Math.min(last, z) - Math.max(first, a) + 86400000;
+      if (overlap > 0) possible.push({label:r.semester, days:overlap});
+    }
+    possible.sort((x,y)=>y.days-x.days);
+    return possible.length && (!possible[1] || possible[0].days !== possible[1].days) ? possible[0].label : '';
+  }
+  start.addEventListener('change', () => {
+    const calculated = infer(start.value);
+    if (calculated) semester.value = calculated;
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}DARI — {{ title }}{% endblock %}
+{% block heading %}<h1>{{ title }}</h1>{% endblock %}
+{% block content %}
+<style>
+.admin26-filters{margin:18px 0 10px}.admin26-filter-main{display:flex;gap:14px;align-items:end;flex-wrap:wrap}.admin26-field{min-width:175px}.admin26-search{flex:1;min-width:240px}.admin26-field label{display:block;margin-bottom:6px}.admin26-check{display:flex!important;align-items:center;justify-content:flex-start;gap:8px;margin:12px 0 0;width:max-content;max-width:100%;font-weight:400!important}.admin26-check input{width:auto!important;margin:0;flex:0 0 auto}.admin26-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.admin26-count{margin:16px 0 0}.admin26-table{margin-top:16px;min-width:0;max-width:100%}.admin26-table .table-scroll{max-height:70vh}.admin26-table table{width:max-content;min-width:100%;table-layout:auto}.admin26-table td,.admin26-table th{white-space:nowrap!important;word-break:normal!important;overflow-wrap:normal!important;max-width:none!important}.admin26-table .multiline{white-space:pre!important;min-width:220px}.admin26-pages{display:flex;justify-content:center;align-items:center;gap:16px;margin:16px 0}
+</style>
+<div class="admin26-toolbar"><a class="button secondary" href="/#consultas-administrativas">← Voltar ao painel</a>{% if create_label and editable %}<a class="button primary" href="{{ new_url }}">{{ create_label }}</a>{% endif %}</div>
+<section class="card" style="margin-top:16px">
+<form method="get" class="admin26-filters">
+<div class="admin26-filter-main">
+{% if slug in ('previsao-retorno-estudantes','alunos-ativos','inicio-intercambio') %}<div class="admin26-field"><label for="fluxo">Fluxo</label><select id="fluxo" name="fluxo"><option value="">Todos</option><option value="incoming" {% if fluxo=='incoming' %}selected{% endif %}>Incoming</option><option value="outgoing" {% if fluxo=='outgoing' %}selected{% endif %}>Outgoing</option></select></div>{% endif %}
+{% if slug in ('previsao-retorno-estudantes','inicio-intercambio') %}<div class="admin26-field"><label for="periodo">{{ 'Período de início' if slug=='inicio-intercambio' else 'Período do retorno' }}</label><select id="periodo" name="periodo"><option value="">Todos os períodos</option>{% for p in periods %}<option value="{{ p }}" {% if periodo==p %}selected{% endif %}>{{ p }}</option>{% endfor %}</select></div>{% endif %}
+<div class="admin26-field admin26-search"><label for="busca">Pesquisar</label><input id="busca" name="busca" value="{{ busca }}" placeholder="{% if slug=='projetos' %}Nome ou código do projeto{% elif slug in ('previsao-retorno-estudantes','alunos-ativos','inicio-intercambio') %}Nome, DRE ou universidade{% else %}Pesquisar nos dados da consulta{% endif %}"></div>
+<button class="button primary" type="submit">Filtrar</button><a class="button secondary" href="/consultas-administrativas/{{ slug }}">Limpar</a>
+</div>
+{% if slug in ('projetos','deadline-parceiras') %}<label class="admin26-check"><input type="checkbox" name="ativos" value="1" {% if ativos=='1' %}checked{% endif %}>{{ 'Projetos ativos' if slug=='projetos' else 'Mostrar ativos' }}</label>{% endif %}
+</form>
+<p class="admin26-count"><strong>{{ total }} {% if slug=='projetos' %}projetos/programas{% elif slug in ('previsao-retorno-estudantes','alunos-ativos','inicio-intercambio') %}mobilidades{% else %}registros{% endif %}</strong></p>
+</section>
+<section class="card table-widget admin26-table" data-table-widget>
+{% set table_id = 'admin26-' ~ slug ~ ('-cols43-' ~ columns|length if slug=='previsao-retorno-estudantes' else '') %}{% set table_label = title %}
+{% include '_table_controls.html' %}
+<table data-column-table="{{ table_id }}"><thead><tr>{% for key,label in columns %}<th scope="col">{{ label }}</th>{% endfor %}<th scope="col" data-fixed-column="true">Ações</th></tr></thead><tbody>
+{% for row in rows %}<tr>{% for key,label in columns %}<td {% if key in ('contacts','emails','deadline_details') %}class="multiline"{% endif %}>{% if key=='links' %}{% for link in row.link_items %}<a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.label }}</a><br>{% else %}—{% endfor %}{% else %}{{ row.get(key) if row.get(key) not in (none,'') else '—' }}{% endif %}</td>{% endfor %}<td class="row-actions" data-fixed-column="true"><a href="{{ row.open_url }}">Abrir</a>{% if slug in ('professores','cursos','coordenadores-cursos') %}{% if editable %}<a href="{{ row.edit_url }}">Editar</a>{% else %}<span class="action-disabled" title="Sem permissão para editar">Editar</span>{% endif %}{% endif %}</td></tr>
+{% else %}<tr><td colspan="{{ columns|length+1 }}">Nenhum registro encontrado para estes filtros.</td></tr>{% endfor %}
+</tbody></table></div>
+</section>
+{% if pages>1 %}<nav class="admin26-pages" aria-label="Paginação">{% if page>1 %}<a class="button secondary" href="?{{ query }}&amp;pagina={{ page-1 }}">← Anterior</a>{% endif %}<span>Página {{ page }} de {{ pages }}</span>{% if page<pages %}<a class="button secondary" href="?{{ query }}&amp;pagina={{ page+1 }}">Próxima →</a>{% endif %}</nav>{% endif %}
+{% endblock %}

@@ -1,0 +1,29 @@
+name: Homologacao tecnica
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  postgresql:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: dari_test
+          POSTGRES_USER: dari_test
+          POSTGRES_PASSWORD: synthetic_ci_only
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U dari_test -d dari_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DARI_TEST_DATABASE_URL: postgresql+psycopg://dari_test:synthetic_ci_only@127.0.0.1:5432/dari_test
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: python -m pip install -r requirements-test.txt
+      - run: python -m pytest tests -q

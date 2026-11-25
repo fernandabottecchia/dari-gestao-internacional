@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}DARI • Novo acordo{% endblock %}
+{% block heading %}<h1>Novo acordo</h1><p>Cadastro manual no Sistema DARI. Durante a transição, acordos já existentes na planilha Controle_Acordos_DARI são importados e gerenciados pela fonte externa.</p>{% endblock %}
+{% block content %}
+<form class="card form-grid" method="post">
+<label>Universidade<select name="university_id" required>{% for x in universities %}<option value="{{x.id}}">{{x.name}}</option>{% endfor %}</select></label>
+<label>Tipo do acordo<select name="agreement_type">{% for opt in agreement_type_options %}<option value="{{ opt }}" >{{ opt }}</option>{% endfor %}</select></label>
+<label>Nº SIG+<input name="sig_number"></label><label>Nº SEI<input name="sei_number"></label>
+<label>Andamento<select name="progress">{% for opt in progress_options %}<option value="{{ opt }}" >{{ opt }}</option>{% endfor %}</select></label>
+<label>Etapa atual UFRJ<select name="ufrj_stage">{% for opt in ufrj_stage_options %}<option value="{{ opt }}" >{{ opt }}</option>{% endfor %}</select></label>
+<label>Data de assinatura<input type="date" name="signed_date"></label><label>Vigência (anos)<input type="number" min="1" max="20" name="validity_years"></label>
+<label>Data de validade<input type="date" name="expiry_date"></label><label>Status<input name="status" placeholder="Ex.: Ativo"></label>
+<label>Coordenador UFRJ<input name="ufrj_coordinator"></label><label>Link da pasta no Drive<input name="drive_folder_url" placeholder="https://drive.google.com/..."></label><label>Próximo passo<input name="next_step"></label>
+<label>Prazo<input name="deadline_text" placeholder="Ex.: Hoje, 15 dias..."></label><label>Última ação<input name="last_action"></label>
+<label class="span-2">Observações<textarea name="notes" rows="4"></textarea></label>
+<div class="form-actions"><a class="button" href="/acordos">Cancelar</a><button class="primary" type="submit">Salvar acordo</button></div>
+</form>
+{% endblock %}

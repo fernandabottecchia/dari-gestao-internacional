@@ -1,0 +1,31 @@
+<section id="banco-de-dados">
+  <p>Entenda como os cadastros se relacionam e consulte a estrutura do banco conectado a esta instalação.</p>
+  <p><strong>Tecnologia:</strong> {{ db_backend }} · <strong>{{ database_reference.count }} tabelas</strong> encontradas. O inventário abaixo consulta somente a estrutura; não altera registros nem apresenta os valores armazenados.</p>
+  <h3>Entidades e relacionamentos</h3>
+  <ul>
+    <li><strong>Estudante → mobilidades:</strong> a identidade fica em <code>students</code>; cada intercâmbio é um processo em <code>mobilities</code>. Um estudante pode participar de vários processos. A direção distingue Incoming e Outgoing.</li>
+    <li><strong>Mobilidade → cadastros de referência:</strong> o processo aponta para curso, programa, coordenador, universidade de origem e destino e semestres. <code>incoming_details</code> e <code>outgoing_details</code> guardam os dados específicos de cada direção.</li>
+    <li><strong>Universidade → país e acordos:</strong> <code>universities</code> referencia <code>countries</code>. Os acordos ficam em <code>agreements</code>; seu acompanhamento fica em <code>agreement_actions</code>. Cadastrar uma universidade não equivale a cadastrar um acordo.</li>
+    <li><strong>Candidatura → mobilidade:</strong> <code>applications</code> registra a análise da candidatura e pode apontar para uma mobilidade após o processamento. Candidaturas e processos são registros distintos.</li>
+  </ul>
+  <h3>Semestres, atividade e conclusão</h3>
+  <p>O catálogo <code>semesters</code> identifica os períodos. As tabelas de evidência de semestres preservam a presença do aluno ao longo do intercâmbio. A primeira ocorrência indica o início; as seguintes indicam continuidade; a última ocorrência conhecida delimita o último período registrado na fonte.</p>
+  <p><strong>Ativo no período</strong> descreve a presença no semestre consultado. <strong>Ativo</strong> depende do período atual e das evidências disponíveis. <strong>Processo concluído</strong> descreve a conclusão administrativa. Um processo concluído continua pertencendo aos períodos históricos em que o aluno esteve ativo. A última ocorrência em uma planilha, isoladamente, não comprova a conclusão administrativa.</p>
+  <h3>Fontes, revisão e histórico</h3>
+  <p>As tabelas <code>incoming_source_*</code> preservam lotes, planilhas, linhas e anotações de origem. Outras tabelas de integração e legado mantêm vínculos, evidências, propostas de equivalência e pendências de revisão. Um registro de origem não deve ser contado automaticamente como um novo estudante homologado.</p>
+  <p><code>dari_local_edits_v53_30</code> registra alterações locais. As tabelas de migração identificam atualizações aplicadas. Ao comparar novas planilhas com cadastros existentes, divergências devem ser revisadas antes de escolher qual informação manter.</p>
+  <h3>Como ler o inventário</h3>
+  <p><strong>Chave primária</strong> identifica o registro; várias colunas podem compor a chave. <strong>Referência</strong> indica uma chave estrangeira declarada no banco. <strong>Aceita nulo</strong> informa se o banco permite ausência de valor; o formulário pode exigir preenchimento adicional. Vínculos definidos apenas no código não aparecem como chaves estrangeiras.</p>
+  <details><summary>Consultar tabelas e campos ({{ database_reference.count }} tabelas)</summary>
+    {% for table in database_reference.tables %}
+    <details style="margin:12px 0"><summary><strong>{{ table.name }}</strong> · {{ table.columns|length }} campos</summary>
+      <p>{{ table.description }}</p>
+      <div style="overflow-x:auto"><table><thead><tr><th>Campo</th><th>Tipo no banco</th><th>Chave primária</th><th>Aceita nulo</th><th>Referência</th></tr></thead><tbody>
+      {% for column in table.columns %}<tr><td><code>{{ column.name }}</code></td><td>{{ column.type }}</td><td>{{ 'Sim' if column.primary else 'Não' }}</td><td>{{ 'Não' if column.primary else ('Sim' if column.nullable else 'Não') }}</td><td>{{ column.reference or '—' }}</td></tr>{% endfor %}
+      </tbody></table></div>
+    </details>
+    {% endfor %}
+  </details>
+  <h3>Manutenção</h3>
+  <p>Faça backup antes de atualizar ou importar dados e mantenha o código compatível com a versão do banco. O instalador desta atualização verifica a versão esperada e cria cópias de segurança. Este card documenta a conexão em uso; não confirma a sincronização com outros computadores ou com o servidor central.</p>
+</section>

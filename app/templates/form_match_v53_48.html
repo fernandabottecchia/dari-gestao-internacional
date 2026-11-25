@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}DARI • Associar resposta ao processo{% endblock %}
+{% block heading %}<h1>Associar resposta ao processo {{ "Incoming" if app48.direction == "incoming" else "Outgoing" }}</h1><p>{{ form_source48.name }}{% if form_source48.stage %} · {{ form_source48.stage }}{% endif %}</p>{% endblock %}
+{% block content %}
+<div class="toolbar"><a class="button secondary" href="/candidaturas/ficha/{{ app48.id }}">← Voltar</a></div>
+<section class="card"><h2>Resposta recebida</h2>
+<p><strong>{{ app48.full_name or 'Nome não informado' }}</strong> · {{ app48.dre or 'DRE não informado' }} · {{ app48.email or 'E-mail não informado' }}</p>
+<p>Ao selecionar um processo, o DARI abrirá sua ficha em modo de edição com o card deste formulário. O vínculo e as informações editadas só serão gravados ao clicar em Salvar alterações. Cancelar descartará o rascunho.</p>
+</section>
+<section class="card"><h2>Localizar processo</h2>
+<form method="get"><label>Pesquisar qualquer campo do estudante ou do processo<input name="q" value="{{ q48 }}" placeholder="Nome, DRE, e-mail, universidade, país, curso, semestre, status, bolsa..."></label><button type="submit" class="button secondary">Buscar</button></form>
+{% if matches48 %}
+ <div class="table-scroll"><table><thead><tr><th>Aluno</th><th>DRE</th><th>E-mail</th><th>Processo</th><th>Destino</th><th>Semestre</th><th></th></tr></thead><tbody>
+ {% for m in matches48 %}<tr><td>{{m.student.full_name}}</td><td>{{m.student.dre or '-'}}</td><td>{{m.student.email or '-'}}</td><td>{{ "Incoming" if app48.direction=="incoming" else "Outgoing" }} #{{m.id}} · {{m.status or '-'}}</td>
+ <td>{{m.destination_university.name if m.destination_university else '-'}}</td>
+ <td>{{m.start_semester.label if m.start_semester else '-'}}</td>
+ <td><form method="post" action="/candidaturas/respostas/{{form_response48.id}}/vincular" onsubmit="return confirm('Confirmar a associação ao processo {{ "Incoming" if app48.direction=="incoming" else "Outgoing" }} #{{m.id}}? As informações serão adicionadas em um card próprio e os campos existentes não serão sobrescritos.')"><input type="hidden" name="mobility_id" value="{{m.id}}"><button type="submit" class="button primary">Selecionar e editar</button></form></td></tr>{% endfor %}
+ </tbody></table></div>
+{% else %}<p>Nenhum processo encontrado com os critérios atuais. Confira a identidade e pesquise manualmente. A resposta ficará pendente até ser associada.</p>{% endif %}
+</section>
+{% endblock %}
