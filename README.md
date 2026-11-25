@@ -11,7 +11,6 @@ Este repositório contém código, testes sintéticos e documentação. O banco 
 - [IMPLANTACAO_TIC.md](docs/IMPLANTACAO_TIC.md): ambiente, migração, contas, serviço, HTTPS, Google e backups.
 - [HOMOLOGACAO.md](docs/HOMOLOGACAO.md): testes realizados, limites e critérios de liberação.
 - [ARQUITETURA.md](docs/ARQUITETURA.md): funcionamento e alterações desta edição.
-- [FORMULARIO_TIC.md](docs/FORMULARIO_TIC.md): pedido de infraestrutura e campos do chamado.
 
 Python 3.12, FastAPI 0.136.1, Starlette 1.0.1, Uvicorn 0.52.1, SQLAlchemy 2.1.9 e psycopg 3.3.9. Dependências diretas fixadas em `requirements.txt`. PostgreSQL 16 é a referência dos testes de conversão. A versão efetivamente oferecida pelo TIC deve passar pelos testes de integração.
 
